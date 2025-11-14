@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Banner -->
+<div class="hero-banner">
+    <div class="container">
+        <h1>The Bank by Your Side</h1>
+        <p>Modern banking solutions for you</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-user-plus"></i> Open Account
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+        {% else %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-home"></i> Go to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <!-- Section: Accounts & Cards -->
+    <section id="accounts" class="mb-5">
+        <div class="section-header">
+            <h2>So that paying is easy</h2>
+            <p class="subtitle">Accounts & Cards</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-wallet"></i></div>
+                    <h3>Open Current Account</h3>
+                    <p class="card-text">Discover our Current Account, Classic Account, and Premium Account.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-building"></i></div>
+                    <h3>Business Account</h3>
+                    <p class="card-text">The right business account for every company. Now with <strong>2.75%</strong> p.a. on call money.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-credit-card"></i></div>
+                    <h3>Credit Cards</h3>
+                    <p class="card-text">Pay securely and flexibly worldwide. The right credit card for everyone — Visa, Mastercard, or American Express.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Savings & Investments -->
+    <section id="savings" class="mb-5">
+        <div class="section-header">
+            <h2>Find the right investment</h2>
+            <p class="subtitle">Savings & Investments</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-piggy-bank"></i></div>
+                    <h3>Call Money Account</h3>
+                    <p class="card-text">Secure <strong>1.7% interest</strong> p.a. with daily availability.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                    <h3>Savings Plan Promotion</h3>
+                    <p class="card-text">5 years with no purchase costs on selected top ETFs & fund savings plans. We’re celebrating World Savings Weeks!</p>
+                    <a href="#" class="card-link">View Offer <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-coins"></i></div>
+                    <h3>money mate</h3>
+                    <p class="card-text">Invest money effortlessly. You decide, our experts invest for you.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-briefcase"></i></div>
+                    <h3>Direct Depot</h3>
+                    <p class="card-text">Your free securities account. Benefit from the opportunities of securities and many advantages.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Loans & Financing -->
+  <section id="credit" class="mb-5">
+        <div class="section-header">
+            <h2>Find the loan that fits you</h2>
+            <p class="subtitle">Loans & Financing</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                    <h3>Installment Loan</h3>
+                    <p class="card-text">Your loan for any purpose. We support you quickly and easily with our installment loan.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-credit-card"></i></div>
+                    <h3>Overdraft Facility</h3>
+                    <p class="card-text">Stay flexible at all times. Get a permanent credit line with the overdraft facility.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-home"></i></div>
+                    <h3>Mortgage Financing</h3>
+                    <p class="card-text">Find the right property financing. Starting at <strong>3.68%</strong> effective annual rate.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Securities Trading -->
+    <section id="securities" class="mb-5">
+        <div class="section-header">
+            <h2>Securities Trading</h2>
+            <p class="subtitle">Professional trading with securities</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Stocks & ETFs</h3>
+                    <p class="card-text">Trade stocks, ETFs, and other securities. Favorable conditions and professional advice.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Funds & Bonds</h3>
+                    <p class="card-text">Broadly diversified funds and secure bonds for your investment.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Insurance -->
+    <section id="insurance" class="mb-5">
+        <div class="section-header">
+            <h2>Insurance & Protection</h2>
+            <p class="subtitle">Security for you and your family</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Life Insurance</h3>
+                    <p class="card-text">Protect your family with the right life insurance.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-car"></i></div>
+                    <h3>Car Insurance</h3>
+                    <p class="card-text">Affordable car insurance with optimal protection for your vehicle.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-home"></i></div>
+                    <h3>Home Contents Insurance</h3>
+                    <p class="card-text">Protect your home furnishings from damage and theft.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Magazine -->
+    <section id="magazine" class="mb-5">
+        <div class="section-header">
+            <h2>Always up to date</h2>
+            <p class="subtitle">News & Tips</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-newspaper"></i></div>
+                    <h4>Gold Price Record</h4>
+                    <p class="card-text">Is it still worth getting in? Current analyses on the gold price.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <h4>Buy Now, Pay Later</h4>
+                    <p class="card-text">2 facts that make us think — and alternatives.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-plane"></i></div>
+                    <h4>Paying Abroad</h4>
+                    <p class="card-text">4 tips that could save your vacation.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="product-card">
+                    <div class="card-icon"><i class="fas fa-globe"></i></div>
+                    <h4>U.S. Tariffs</h4>
+                    <p class="card-text">Where U.S. tariffs could hit Germany — scenarios and tips.</p>
+                    <a href="#" class="card-link">Learn more <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

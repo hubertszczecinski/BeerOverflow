@@ -15,7 +15,6 @@ login_manager.login_message_category = 'info'
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Load user by ID"""
     from app.models import User
     return User.query.get(int(user_id))
 
@@ -23,8 +22,8 @@ def load_user(user_id):
 def create_app(config_name=None):
     app = Flask(__name__)
     
-    config_name = config_name or os.getenv('FLASK_ENV', 'development')
-    app.config.from_object(config[config_name])
+    app.config.from_object(config['default'])
+
     
     db.init_app(app)
     migrate.init_app(app, db)

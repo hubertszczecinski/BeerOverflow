@@ -16,7 +16,7 @@ def login():
         remember_me = bool(request.form.get('remember_me'))
         
         if not username or not password:
-            flash('Wypełnij wszystkie pola.', 'danger')
+            flash('File all the fields', 'danger')
         else:
             user = User.query.filter_by(username=username).first()
             
@@ -34,7 +34,6 @@ def login():
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """Registration page"""
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     

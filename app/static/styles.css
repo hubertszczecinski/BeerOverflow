@@ -66,3 +66,111 @@
 .faceid-fail {
   animation: faceid-shake 0.4s;
 }
+
+
+/* Voice Control Styles */
+.voice-control-window {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 280px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    display: none;
+}
+
+.voice-control-window.show {
+    display: block;
+}
+
+.voice-control-header {
+    background-color: var(--secondary-color);
+    color: var(--white);
+    padding: 0.75rem 1rem;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.voice-control-header h6 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.voice-control-body {
+    padding: 1rem;
+}
+
+.voice-status {
+    font-size: 0.875rem;
+    text-align: center;
+    min-height: 20px;
+}
+
+.voice-status.recording {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.voice-status.processing {
+    color: var(--primary-color);
+}
+
+.voice-status.success {
+    color: #28a745;
+}
+
+.voice-status.error {
+    color: #dc3545;
+}
+
+.voice-commands {
+    font-size: 0.75rem;
+}
+
+.voice-control-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: var(--secondary-color);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.voice-control-toggle:hover {
+    background: #FFD633;
+    transform: scale(1.1);
+}
+
+.voice-control-toggle.recording {
+    background: var(--accent-color);
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 102, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 102, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 102, 0, 0);
+    }
+}

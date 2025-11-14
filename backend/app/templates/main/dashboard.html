@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or 'Dashboard' }}</title>
+  </head>
+  <body>
+    <h1>Dashboard</h1>
+    {% if user %}
+      <p>Welcome, {{ user.username }}.</p>
+    {% else %}
+      <p>Welcome.</p>
+    {% endif %}
+    <p><a href="/">Home</a></p>
+  </body>
+  </html>
+

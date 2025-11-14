@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 
 from groq import Groq
 
-from config import get_settings
+from .config import get_settings
 
 settings = get_settings()
 

@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 
 from pydantic import BaseModel
 
-from ner_extraction import Entity
+from .ner_extraction import Entity
 
 
 class ProductCard(BaseModel):

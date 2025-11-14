@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or 'Login' }}</title>
+  </head>
+  <body>
+    <h1>Login</h1>
+    <form method="post">
+      <label>Username <input name="username" /></label><br />
+      <label>Password <input name="password" type="password" /></label><br />
+      <label><input type="checkbox" name="remember_me" /> Remember me</label><br />
+      <button type="submit">Login</button>
+    </form>
+    <p><a href="/auth/register">Register</a></p>
+  </body>
+  </html>
+

@@ -5,14 +5,14 @@ import stable_whisper
 
 import typer
 
-from pipeline import (
+from .pipeline import (
   index_pdf,
   answer_question,
   list_all_products,
   compare_products,
   answer_question_for_file,
 )
-from vector_store import init_db
+from .vector_store import init_db
 
 app = typer.Typer(help="Banking PDF Q&A service CLI")
 

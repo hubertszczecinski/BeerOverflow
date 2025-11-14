@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 from pypdf import PdfReader
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
-from config import get_settings
+from .config import get_settings
 
 settings = get_settings()
 

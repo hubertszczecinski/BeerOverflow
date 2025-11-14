@@ -18,4 +18,4 @@ EXPOSE 5000
 
 # Command to run the application using Gunicorn
 # 'wsgi:app' refers to the 'app' object in the 'wsgi.py' file
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
+CMD ["gunicorn", "--chdir", "/app", "--bind", "0.0.0.0:5000", "wsgi:app"]

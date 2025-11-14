@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
+from pathlib import Path
 from typing import List, Tuple, Dict, Set
 
-from config import get_settings
-import pdf_ingest, embeddings, ner_extraction, products
-from groq_client import GroqClient
-from vector_store import (
+from .config import get_settings
+
+from . import pdf_ingest, embeddings, ner_extraction, products
+from .groq_client import GroqClient
+from .vector_store import (
     init_db,
     insert_chunks,
     delete_pdf,
@@ -14,7 +17,7 @@ from vector_store import (
     list_products,
     get_products_by_ids,
 )
-from vector_store import get_all_embeddings_with_chunks, DocumentChunk, get_chunks_by_ids
+from .vector_store import get_all_embeddings_with_chunks, DocumentChunk, get_chunks_by_ids
 
 settings = get_settings()
 
@@ -60,7 +63,7 @@ def answer_question(question: str, top_k: int | None = None) -> str:
     init_db()
     top_k = top_k or settings.top_k_default
     # use embeddings module to get best chunks
-    from embeddings import search_similar
+    from .embeddings import search_similar
 
     results: List[Tuple[DocumentChunk, float]] = search_similar(question, top_k=top_k)
     if not results:
@@ -331,3 +334,9 @@ def _merge_adjacent_results(
                 break
 
     return ordered
+
+__all__ = [
+    "get_settings",
+    "list_all_products",
+    "answer_question",
+]

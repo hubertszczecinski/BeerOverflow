@@ -7,8 +7,8 @@ import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModel
 
-from config import get_settings
-from vector_store import get_all_embeddings_with_chunks, DocumentChunk
+from .config import get_settings
+from .vector_store import get_all_embeddings_with_chunks, DocumentChunk
 
 settings = get_settings()
 

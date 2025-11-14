@@ -5,7 +5,7 @@ import stable_whisper
 
 import typer
 
-from pipeline import (
+from .pipeline import (
   index_pdf,
   answer_question,
   list_all_products,
@@ -13,7 +13,7 @@ from pipeline import (
   answer_question_for_file,
   ner_basic_answers_for_product,
 )
-from vector_store import init_db
+from .vector_store import init_db
 
 app = typer.Typer(help="Banking PDF Q&A service CLI")
 

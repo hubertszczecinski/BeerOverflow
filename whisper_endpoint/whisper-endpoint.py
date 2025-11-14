@@ -1,3 +1,7 @@
+import os
+import subprocess
+import tempfile
+
 import numpy as np
 import stable_whisper
 import ray
@@ -5,7 +9,7 @@ from starlette.requests import Request
 from ray import serve
 import torch
 
-from whisper_endpoint.id_matching import Matcher
+from id_matching import Matcher
 
 
 #serve run whisper-endpoint:depl
@@ -15,8 +19,7 @@ from whisper_endpoint.id_matching import Matcher
 class ModelDeployment:
     def __init__(self):
         self.model = stable_whisper.load_model("base")
-        self.matcher = Matcher("../id.csv")
-
+        self.matcher = Matcher("id.csv")
 
     async def __call__(self, request: Request):
         request = await request.body()

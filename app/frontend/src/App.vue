@@ -1,12 +1,12 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import Topbar from './components/Topbar.vue'
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="" src="./assets/logo.svg" width="125" height="125" />
+    <Topbar>
 
+    </Topbar>
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
     </div>

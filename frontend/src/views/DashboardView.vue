@@ -11,11 +11,16 @@
 
     <div class="row g-4 mb-4">
       <div class="col-md-3">
-        <div class="product-card text-center">
-          <div class="card-icon"><i class="fas fa-exchange-alt"></i></div>
-          <h4>Transfer</h4>
-          <a href="#" class="btn btn-primary btn-sm w-100">Transfer Now</a>
-        </div>
+        <ProductCard
+          icon="fas fa-exchange-alt"
+          title="Transfer"
+          centered
+          use-h4
+        >
+          <template #action>
+            <a href="#" class="btn btn-primary btn-sm w-100">Transfer Now</a>
+          </template>
+        </ProductCard>
       </div>
     </div>
 
@@ -67,6 +72,7 @@
 
 <script setup>
 import { useAuthStore } from '@/stores/auth';
+import ProductCard from '@/components/ProductCard.vue';
 const authStore = useAuthStore();
 
 const formatDate = (dateString) => {

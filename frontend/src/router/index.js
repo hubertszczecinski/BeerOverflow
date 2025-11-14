@@ -5,12 +5,12 @@ import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import DashboardView from '../views/DashboardView.vue';
 
-import AccountsView from '../views/AccountsView.vue';
-import SavingsView from '../views/SavingsView.vue';
-import CreditView from '../views/CreditView.vue';
-import SecuritiesView from '../views/SecuritiesView.vue';
-import InsuranceView from '../views/InsuranceView.vue';
-import MagazineView from '../views/MagazineView.vue';
+import AccountsView from '../views/tabs/AccountsView.vue';
+import SavingsView from '../views/tabs/SavingsView.vue';
+import CreditView from '../views/tabs/CreditView.vue';
+import SecuritiesView from '../views/tabs/SecuritiesView.vue';
+import InsuranceView from '../views/tabs/InsuranceView.vue';
+import MagazineView from '../views/tabs/MagazineView.vue';
 
 const routes = [
     {

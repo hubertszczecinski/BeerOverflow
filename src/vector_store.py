@@ -200,3 +200,16 @@ def get_products_by_ids(ids: Sequence[int]) -> List[ProductRecord]:
       for p in products:
           session.expunge(p)
       return products
+
+
+def get_chunks_by_ids(ids: Sequence[int]) -> List[DocumentChunk]:
+  if not ids:
+      return []
+  with get_session() as session:
+      stmt = select(DocumentChunk).where(DocumentChunk.id.in_(list(ids)))
+      chunks = session.scalars(stmt).all()
+      for c in chunks:
+          session.expunge(c)
+      # Ensure deterministic ordering
+      chunks.sort(key=lambda c: (c.page, c.chunk_index))
+      return chunks

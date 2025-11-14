@@ -14,7 +14,7 @@ from vector_store import (
     list_products,
     get_products_by_ids,
 )
-from vector_store import get_all_embeddings_with_chunks, DocumentChunk
+from vector_store import get_all_embeddings_with_chunks, DocumentChunk, get_chunks_by_ids
 
 settings = get_settings()
 
@@ -157,6 +157,51 @@ def compare_products(product_ids: List[int], question: str) -> str:
     products_json = json.dumps(prods_data, indent=2)
     client = GroqClient()
     return client.compare_products(products_json, question)
+
+
+def ner_basic_answers_for_product(pdf_path: str) -> str:
+    """
+    Use NER to answer 3 questions for a given product's text:
+      - Opening balance (minimum/initial deposit)
+      - Available terms (durations/dates)
+      - Fees (amounts near fee/charge words)
+    """
+    init_db()
+    # Find product by pdf_path
+    all_prods = list_products()
+    product_ids =  [p.id for p in all_prods if p.pdf_path == pdf_path]
+    prods = get_products_by_ids(product_ids)
+    if not prods:
+        return f"No product found with id {pdf_path}."
+
+    prod = prods[0]
+    data = prod.data or {}
+    chunk_ids = data.get("chunk_ids") or []
+    if not chunk_ids:
+        return f"Product {pdf_path} has no associated text chunks to analyze."
+
+    chunks = get_chunks_by_ids(chunk_ids)
+    from ner_extraction import answer_simple_questions_for_chunks
+
+    answers = answer_simple_questions_for_chunks(chunks)
+
+    def fmt_money(m: object) -> str:
+        if isinstance(m, dict) and "amount" in m:
+            amt = m.get("amount")
+            cur = m.get("currency") or ""
+            return f"{amt} {cur}".strip()
+        return str(m) if m is not None else "-"
+
+    opening = fmt_money(answers.get("opening_balance"))
+    terms = answers.get("available_terms") or []
+    fees = answers.get("fees") or []
+
+    parts = [
+        f"Opening balance: {opening}",
+        "Available terms: " + (", ".join(map(str, terms)) if terms else "-"),
+        "Fees: " + (", ".join(fmt_money(f) for f in fees) if fees else "-"),
+    ]
+    return "\n".join(parts)
 
 
 def debug_show_chunks_and_scores(question: str, top_k: int | None = None):

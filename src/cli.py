@@ -11,6 +11,7 @@ from pipeline import (
   list_all_products,
   compare_products,
   answer_question_for_file,
+  ner_basic_answers_for_product,
 )
 from vector_store import init_db
 
@@ -74,6 +75,16 @@ def cmd_compare(
   answer = compare_products(product_ids, question)
   typer.echo("\nCOMPARISON:\n")
   typer.echo(answer)
+
+
+@app.command("ner-qa")
+def cmd_ner_qa(
+    pdf_path: str = typer.Argument(..., help="Product ID to analyze with NER."),
+):
+    """Answer 3 simple NER-based questions for a product: opening balance, available terms, fees."""
+    out = ner_basic_answers_for_product(pdf_path)
+    typer.echo("\nNER ANSWERS:\n")
+    typer.echo(out)
 
 
 def main():

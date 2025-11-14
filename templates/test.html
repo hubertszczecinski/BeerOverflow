@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+<title>Face ID</title>
+</head>
+<body>
+
+<div id="faceid-overlay">
+  <div id="faceid-circle" class="faceid-circle">
+    <img src="{{ url_for('static', filename='img/face_id_logo.png') }}" alt="Face ID">
+    <div id="faceid-tick" class="faceid-tick">✔️</div>
+  </div>
+  <div id="faceid-text" class="faceid-text"></div>
+</div>
+
+<script src="{{ url_for('static', filename='scripts.js') }}"></script>
+<script>
+  showFaceID(null);
+
+  fetch('/verify-face')
+    .then(response => response.json())
+    .then(data => {
+      showFaceID(data.result);
+    });
+</script>
+
+</body>
+</html>

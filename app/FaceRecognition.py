@@ -1,5 +1,6 @@
 from deepface import DeepFace
 import cv2
+import numpy as np
 
 class FaceRecognition:
 
@@ -7,6 +8,14 @@ class FaceRecognition:
         with open(photo_path, 'rb') as file:
             binary_photo = file.read()
         return binary_photo
+
+    def blob_to_cv2_image(self,blob):
+
+        if blob is None:
+            return None
+        np_array = np.frombuffer(blob, dtype=np.uint8)
+        img = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+        return img
 
     def verify_face(self, frame, image):
         try:
@@ -16,13 +25,8 @@ class FaceRecognition:
             print(e)
         return False
 
-    def blob_to_image_file(self, blob, filename="photo1.jpg"):
-        if blob is None:
-            print("No image in database")
-            return None
-        with open(filename, "wb") as f:
-            f.write(blob[0])
-        return filename
+    def get_image_from_database(self):
+        pass
 
     def generate_img(self, save_path="photo1.jpg"):
         camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)

@@ -16,8 +16,9 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    photo= db.Column(db.Blob)
     
-    
+
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic')
     
     def set_password(self, password):

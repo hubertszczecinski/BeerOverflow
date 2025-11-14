@@ -6,12 +6,7 @@ import { inject } from 'vue'
 const router = inject('router')
 
 const handleTransferClick = () => {
-  if (router) {
-    router.push('/authenticate')
-  } else {
-    // Fallback navigation
-    window.location.href = '/authenticate'
-  }
+  router.push({ name: 'Authenticate' })
 }
 </script>
 

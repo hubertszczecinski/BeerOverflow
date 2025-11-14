@@ -1,16 +1,17 @@
 // src/router.js
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from './App.vue' // Your main app component
+// Home page component (rendered inside App.vue's <RouterView />)
+const HomePage = () => import('./components/HomePage.vue')
 
 // Import your page components (we'll create these next)
-const AuthenticatePage = () => import('./components/FaceAuthPage.vue')
+const AuthenticatePage = () => import('./views/FaceAuthView.vue')
 const TransferPage = () => import('./components/TransferPage.vue')
 
 const routes = [
     {
         path: '/',
         name: 'Home',
-        component: Home
+        component: HomePage
     },
     {
         path: '/authenticate',

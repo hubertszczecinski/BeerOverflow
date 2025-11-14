@@ -4,6 +4,7 @@ import MainNavBar from '@/components/MainNavBar.vue'
 import Footer from '@/components/Footer.vue'
 import FlashMessages from '@/components/FlashMessages.vue'
 import Actionboxes from '@/components/Actionboxes.vue'
+import PhotoCaptureUploader from "@/components/PhotoCaptureUploader.vue";
 import {useRoute, useRouter} from "vue-router";
 import {provide, ref} from "vue";
 
@@ -21,6 +22,7 @@ const flashMessages = ref([])
 
 <template>
   <div id="app" class="min-h-screen flex flex-col">
+    <PhotoCaptureUploader  />
     <!-- Fixed navbar at the very top -->
     <TopNavBar :user="currentUser" class="fixed top-0 left-0 right-0 z-50"/>
 

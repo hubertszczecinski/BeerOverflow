@@ -1,9 +1,12 @@
 import numpy as np
 import stable_whisper
-import librosa
 import ray
 from starlette.requests import Request
 from ray import serve
+import torch
+
+from id_matching import Matcher
+
 
 #serve run whisper-endpoint:depl
 
@@ -12,16 +15,19 @@ from ray import serve
 class ModelDeployment:
     def __init__(self):
         self.model = stable_whisper.load_model("base")
+        self.matcher = Matcher("id.csv")
+
 
     async def __call__(self, request: Request):
         request = await request.body()
         data = np.frombuffer(request, np.float32)
-        out = self.model.transcribe(audio=data, verbose=True, vad=True, only_voice_freq=True)
+        #separated = self.separator.separate_batch(torch.from_numpy(data).unsqueeze(0)) separated[0, :, 0]
+        out = self.model.transcribe(audio=data, language="en", verbose=True, vad=True, only_voice_freq=True)
         segments = out.to_dict()["segments"]
         print(len(segments))
         if len(segments) == 0:
             return ""
-        return out.text
+        return self.matcher.match(out.text)
 
 
 ray.init()

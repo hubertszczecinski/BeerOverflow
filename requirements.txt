@@ -7,4 +7,5 @@ gunicorn==21.2.0
 stable-ts==2.19.1
 ray==2.51.1
 librosa==0.11.0
-
+speechbrain==1.0.3
+sentence-transformers==5.1.2

@@ -1,0 +1,33 @@
+# This file orchestrates the building and running of both services.
+version: '3.8'
+
+services:
+  # The Flask Backend Service
+  backend:
+    build:
+      context: ./backend  # Path to the backend's Dockerfile and code
+    container_name: flask-backend
+    ports:
+      - "5000:5000"  # Map host port 5000 to container port 5000
+    # Add a volume for development (optional)
+    # This mounts your local ./backend code into the container.
+    # Changes you make locally will be reflected in the container.
+    # Note: Gunicorn might need a reload flag to see changes.
+    # volumes:
+    #   - ./backend:/app
+
+  # The Vue.js Frontend Service
+  frontend:
+    build:
+      context: ./frontend # Path to the frontend's Dockerfile and code
+    container_name: vue-frontend
+    ports:
+      - "8080:80"  # Map host port 8080 to Nginx's port 80
+    depends_on:
+      - backend    # Ensures the backend service starts before the frontend
+
+# Define the network (optional, but good practice)
+# This ensures both containers are on the same network.
+networks:
+  default:
+    driver: bridge

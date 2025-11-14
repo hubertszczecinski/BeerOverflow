@@ -4,6 +4,17 @@ import MainNavBar from '@/components/MainNavBar.vue'
 import Footer from '@/components/Footer.vue'
 import FlashMessages from '@/components/FlashMessages.vue'
 import Actionboxes from '@/components/Actionboxes.vue'
+
+// Get the router instance
+const router = useRouter()
+const route = useRoute()
+
+// Provide the router to all child components
+provide('router', router)
+
+const currentUser = ref(null)
+const flashMessages = ref([])
+
 </script>
 
 <template>

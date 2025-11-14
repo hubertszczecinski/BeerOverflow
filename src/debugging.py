@@ -77,8 +77,18 @@ def cmd_compare(
 
 
 def main():
-  pdf_path = r"C:\Users\test-tw\PycharmProjects\BeerOverflow\data\Regulamin_Lokaty_INGBusOL_eng.pdf"
-  index_pdf(pdf_path)
+    pdf_path = r"C:\Users\test-tw\PycharmProjects\BeerOverflow\data\Regulamin_Lokaty_INGBusOL_eng.pdf"
+    pdf_path = r"C:\Users\test-tw\PycharmProjects\BeerOverflow\data\TermDeposit_ADB202.pdf"
+    # index_pdf(pdf_path)
+    question = "tell me all you know"
+    top_k = 28
+
+    if pdf_path is not None:
+        answer = answer_question_for_file(pdf_path, question, top_k=top_k)
+    else:
+        answer = answer_question(question, top_k=top_k)
+    typer.echo("\nANSWER:\n")
+    typer.echo(answer)
 
 
 if __name__ == "__main__":

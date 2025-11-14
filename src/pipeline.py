@@ -78,44 +78,60 @@ def answer_question(question: str, top_k: int | None = None) -> str:
 
 
 def answer_question_for_file(
-    pdf_path: int,
+    pdf_path: str,
     question: str,
-    top_k: int | None = None,
+    max_chars: int = 12000,
 ) -> str:
     """
-    Answer a question using only chunks associated with a specific product.
+    Answer a question using all chunks associated with a specific PDF file.
     """
     init_db()
-    # get all product ids for this pdf_path
-    product_ids = [p.id for p in list_products() if p.pdf_path == pdf_path]
-    prods = get_products_by_ids(product_ids)
-    if not prods:
-        return f"No product found for path {pdf_path}."
 
-    prod = prods[0]
-    data = prod.data or {}
-    chunk_ids = data.get("chunk_ids") or []
-    if not chunk_ids:
-        return f"Product {pdf_path} has no associated text chunks to answer from."
-
-    top_k = top_k or settings.top_k_default
-    from embeddings import search_similar_for_chunk_ids
-
-    results: List[Tuple[DocumentChunk, float]] = search_similar_for_chunk_ids(question, chunk_ids, top_k=top_k)
-    if not results:
-        return f"No matching chunks found for product {pdf_path}. Try re-indexing the PDF."
-
-    merged = _merge_adjacent_results(results, window_size=settings.neighbor_window_size)
-    context_parts = [
-        f"[Product {pdf_path} | Score {m['score']:.3f} | {m['pdf_path']} p{m['page']} idx {m['start_index']}..{m['end_index']}]\n{m['text']}"
-        for m in merged
+    # 1. Get all chunks for this pdf_path
+    all_chunks_with_vecs = get_all_embeddings_with_chunks()
+    chunks_for_pdf: List[DocumentChunk] = [
+        ch for (ch, _vec) in all_chunks_with_vecs
+        if ch.pdf_path == pdf_path
     ]
+
+    if not chunks_for_pdf:
+        return f"No chunks found for path {pdf_path}. Try indexing the PDF first."
+
+    # 2. Sort in reading order
+    chunks_for_pdf.sort(key=lambda c: (c.page, c.chunk_index))
+
+    # 3. Build context by concatenating chunks until we hit max_chars
+    context_parts: List[str] = []
+    used_chars = 0
+
+    for ch in chunks_for_pdf:
+        if not ch.text:
+            continue
+        text = ch.text.strip()
+        if not text:
+            continue
+
+        header = f"[{pdf_path} | page {ch.page} | chunk {ch.chunk_index}]\n"
+        piece = header + text
+
+        if used_chars + len(piece) > max_chars:
+            # If nothing is added yet and one chunk is already too big,
+            # still include it once.
+            if not context_parts:
+                context_parts.append(piece[:max_chars])
+            break
+
+        context_parts.append(piece)
+        used_chars += len(piece)
+
+    if not context_parts:
+        return f"No usable text found for path {pdf_path}."
+
     context = "\n\n---\n\n".join(context_parts)
 
+    # 4. Ask Groq with the user's question AS IS
     client = GroqClient()
-    scoped_question = f"For product {pdf_path}, {question}"
-    return client.ask_with_context(scoped_question, context)
-
+    return client.ask_with_context(question, context)
 
 def list_all_products() -> List[dict]:
     init_db()

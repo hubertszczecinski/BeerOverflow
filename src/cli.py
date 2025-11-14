@@ -38,13 +38,13 @@ def cmd_remove_pdf(pdf_path: str = typer.Argument(..., help="pdf path to remove.
 @app.command("ask")
 def cmd_ask(
     question: str = typer.Argument(..., help="User question."),
-    top_k: int = typer.Option(8, help="Number of chunks to retrieve."),
+    top_k: int = typer.Option(28, help="Number of chunks to retrieve."),
     pdf_path: Optional[str] = typer.Option(
         None, "--pdf_path", "-p", help="Optional pdf_path to focus the question on."
     ),
 ):
     if pdf_path is not None:
-        answer = answer_question_for_file(pdf_path, question, top_k=top_k)
+        answer = answer_question_for_file(pdf_path, question)
     else:
         answer = answer_question(question, top_k=top_k)
     typer.echo("\nANSWER:\n")

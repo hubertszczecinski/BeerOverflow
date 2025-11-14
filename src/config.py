@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     neighbor_window_size: int = 1
 
     # Retrieval
-    top_k_default: int = 8
+    top_k_default: int = 28
 
 
 @lru_cache(maxsize=1)

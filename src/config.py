@@ -30,9 +30,15 @@ class Settings(BaseSettings):
     groq_api_key: Optional[str] = str(Path(os.getenv("GROQ_API_KEY")))
     groq_model: str = "llama-3.3-70b-versatile"
 
-    # Chunking
+    # Chunking (character-based; used as fallback)
     chunk_max_chars: int = 1200
     chunk_overlap_chars: int = 200
+    # Segmentation (token-based chunking)
+    segmentation_tokenizer_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    segment_max_tokens: int = 400
+    segment_overlap_tokens: int = 80
+    # Answer-time context windows (merge adjacent chunks)
+    neighbor_window_size: int = 1
 
     # Retrieval
     top_k_default: int = 8

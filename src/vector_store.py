@@ -110,7 +110,7 @@ def insert_chunks(
               page=c["page"],
               chunk_index=c["chunk_index"],
               text=c["text"],
-              metadata=c.get("metadata") or {},
+              doc_metadata=c.get("metadata") or {},
           )
           session.add(db_chunk)
           db_chunks.append(db_chunk)

@@ -8,7 +8,7 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 
 from config import get_settings
-from vector_store import get_all_embeddings_with_chunks
+from vector_store import get_all_embeddings_with_chunks, DocumentChunk
 
 settings = get_settings()
 
@@ -45,13 +45,17 @@ def encode_texts(texts: List[str], batch_size: int = 8) -> np.ndarray:
             mean_pooled = sum_vec / lengths
             vecs = mean_pooled.cpu().numpy().astype("float32")
             all_vecs.append(vecs)
-    return np.vstack(all_vecs) if all_vecs else np.zeros((0, 768), dtype=np.float32)
+    if all_vecs:
+        return np.vstack(all_vecs)
+    # derive hidden size from model config if available
+    hidden_size = getattr(getattr(model, 'config', None), 'hidden_size', 768)
+    return np.zeros((0, int(hidden_size)), dtype=np.float32)
 
 
 def search_similar(
         query: str,
         top_k: int | None = None,
-) -> List[Tuple[str, float]]:
+) -> List[Tuple[DocumentChunk, float]]:
     """
     Returns list of (chunk_text, score).
     """
@@ -63,10 +67,10 @@ def search_similar(
     if not chunks_with_vecs:
         return []
 
-    chunk_texts: List[str] = []
+    chunk_objs: List[DocumentChunk] = []
     chunk_vecs: List[np.ndarray] = []
     for chunk, vec in chunks_with_vecs:
-        chunk_texts.append(chunk.text)
+        chunk_objs.append(chunk)
         chunk_vecs.append(vec)
 
     mat = np.vstack(chunk_vecs)
@@ -74,14 +78,14 @@ def search_similar(
     m = mat / (np.linalg.norm(mat, axis=1, keepdims=True) + 1e-9)
     scores = m @ q
     idxs = np.argsort(scores)[::-1][:top_k]
-    return [(chunk_texts[i], float(scores[i])) for i in idxs]
+    return [(chunk_objs[i], float(scores[i])) for i in idxs]
 
 
 def search_similar_for_chunk_ids(
         query: str,
         chunk_ids: List[int],
         top_k: int | None = None,
-) -> List[Tuple[str, float]]:
+) -> List[Tuple[DocumentChunk, float]]:
     """
     Returns list of (chunk_text, score) restricted to given chunk IDs.
     """
@@ -101,10 +105,10 @@ def search_similar_for_chunk_ids(
     if not chunks_with_vecs:
         return []
 
-    chunk_texts: List[str] = []
+    chunk_objs: List[DocumentChunk] = []
     chunk_vecs: List[np.ndarray] = []
     for chunk, vec in chunks_with_vecs:
-        chunk_texts.append(chunk.text)
+        chunk_objs.append(chunk)
         chunk_vecs.append(vec)
 
     mat = np.vstack(chunk_vecs)
@@ -112,4 +116,4 @@ def search_similar_for_chunk_ids(
     m = mat / (np.linalg.norm(mat, axis=1, keepdims=True) + 1e-9)
     scores = m @ q
     idxs = np.argsort(scores)[::-1][:top_k]
-    return [(chunk_texts[i], float(scores[i])) for i in idxs]
+    return [(chunk_objs[i], float(scores[i])) for i in idxs]

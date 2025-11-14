@@ -39,12 +39,12 @@ def cmd_remove_pdf(pdf_path: str = typer.Argument(..., help="pdf path to remove.
 def cmd_ask(
     question: str = typer.Argument(..., help="User question."),
     top_k: int = typer.Option(8, help="Number of chunks to retrieve."),
-    pdf_path: Optional[str] = typer.Option(
-        None, "--pdf_path", "-p", help="Optional pdf_path to focus the question on."
+    product_id: Optional[int] = typer.Option(
+        None, "--product-id", "-p", help="Optional product id to focus the question on."
     ),
 ):
-    if pdf_path is not None:
-        answer = answer_question_for_file(pdf_path, question, top_k=top_k)
+    if product_id is not None:
+        answer = answer_question_for_file(product_id, question, top_k=top_k)
     else:
         answer = answer_question(question, top_k=top_k)
     typer.echo("\nANSWER:\n")
@@ -77,7 +77,8 @@ def cmd_compare(
 
 
 def main():
-  app()
+  pdf_path = r"C:\Users\test-tw\PycharmProjects\BeerOverflow\data\Regulamin_Lokaty_INGBusOL_eng.pdf"
+  index_pdf(pdf_path)
 
 
 if __name__ == "__main__":

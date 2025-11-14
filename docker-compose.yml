@@ -34,8 +34,6 @@ services:
   frontend:
     build:
       context: ./frontend # Path to the frontend's Dockerfile and code
-      args:
-        - API_BASE_URL=http://localhost:8080/api
     container_name: vue-frontend
     ports:
       - "8080:80"  # Map host port 8080 to Nginx's port 80

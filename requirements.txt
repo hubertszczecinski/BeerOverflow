@@ -4,4 +4,7 @@ flask-migrate==4.0.5
 flask-login==0.6.3
 werkzeug==3.0.1
 gunicorn==21.2.0
+stable-ts==2.19.1
+ray==2.51.1
+librosa==0.11.0
 

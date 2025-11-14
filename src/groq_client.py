@@ -4,14 +4,16 @@ from typing import List, Dict, Any
 
 from groq import Groq
 
+from config import get_settings
 
-settings = __import__('config')
-groq_api_key = settings.groq_api_key
+settings = get_settings()
 
 
 class GroqClient:
   def __init__(self) -> None:
-      self.client = Groq(api_key=groq_api_key)
+      if not settings.groq_api_key:
+          raise RuntimeError("GROQ API key is not set (env: BANKING_QA_GROQ_API_KEY).")
+      self.client = Groq(api_key=settings.groq_api_key)
 
   def chat(
       self,
@@ -29,12 +31,31 @@ class GroqClient:
       )
       return resp.choices[0].message.content
 
+  def ask_with_context(self, question: str, context: str) -> str:
+      system_prompt = (
+          "You are an assistant that answers questions about banking regulations, "
+          "deposit products, and credits, based ONLY on the provided context. "
+          "Be concise and explicit about fees, durations, and conditions."
+      )
+      messages = [
+          {"role": "system", "content": system_prompt},
+          {
+              "role": "user",
+              "content": f"Context:\n{context}\n\nQuestion: {question}",
+          },
+      ]
+      return self.chat(messages)
 
-if __name__ == "__main__":
-    groq_client = GroqClient()
-    messages = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "What is the capital of France?"},
-    ]
-    response = groq_client.chat(messages)
-    print("Response from Groq model:", response)
+  def compare_products(self, products_json: str, question: str) -> str:
+      system_prompt = (
+          "You compare banking products (deposits, credits) using structured JSON data. "
+          "Highlight differences in price, fees, durations, eligibility, and risks."
+      )
+      messages = [
+          {"role": "system", "content": system_prompt},
+          {
+              "role": "user",
+              "content": f"Products JSON:\n{products_json}\n\nUser question: {question}",
+          },
+      ]
+      return self.chat(messages)

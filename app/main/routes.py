@@ -6,12 +6,12 @@ from app.main import bp
 @bp.route('/')
 def index():
     """Home page"""
-    return render_template('main/index.html', title='Strona główna')
+    return render_template('main/index.html', title='Main site')
 
 
 @bp.route('/dashboard')
 @login_required
 def dashboard():
     """User dashboard"""
-    return render_template('main/dashboard.html', title='Panel użytkownika', user=current_user)
+    return render_template('main/dashboard.html', title='Users dashboard', user=current_user)
 

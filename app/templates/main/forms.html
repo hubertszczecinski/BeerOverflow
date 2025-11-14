@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles_forms.css') }}">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg main-navbar navbar-dark">
+        <div class="container-fluid px-0">
+            <ul class="navbar-nav w-100">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}#accounts">
+                        <i class="fas fa-credit-card d-block mb-1"></i>
+                        Accounts & Cards
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}#savings">
+                        <i class="fas fa-piggy-bank d-block mb-1"></i>
+                        Savings & Investments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}#credit">
+                        <i class="fas fa-hand-holding-usd d-block mb-1"></i>
+                        Loans & Financing
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}#securities">
+                        <i class="fas fa-chart-line d-block mb-1"></i>
+                        Securities Trading
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}#insurance">
+                        <i class="fas fa-shield-alt d-block mb-1"></i>
+                        Insurance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}#magazine">
+                        <i class="fas fa-newspaper d-block mb-1"></i>
+                        Magazine
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-btn text-center mt-2">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+    </div>
+
+    <div class="form-container mt-2">
+        <form id="myForm">
+            <h2 class="text-center mb-4">User Information</h2>
+            <label>Name:
+                <input type="text" name="name">
+            </label>
+            <label>Surname:
+                <input type="text" name="surname">
+            </label>
+            <label>ID Number:
+                <input type="text" name="id_number">
+            </label>
+            <label>Job:
+                <input type="text" name="job">
+            </label>
+            <label>Birthday:
+                <input type="date" name="birthday">
+            </label>
+            <label>Income:
+                <input type="text" name="income">
+            </label>
+            <label>Address:
+                <input type="text" name="address">
+            </label>
+            <label>Phone Number:
+                <input type="text" name="phone_number">
+            </label>
+            <label>Email:
+                <input type="email" name="email">
+            </label>
+            <div class="text-end mt-3">
+            <button type="button" class="btn btn-dark" id="submitBtn">
+                Submit
+            </button>
+            </div>
+        </form>
+    </div>
+
+<script>
+    let timeout;
+    function autosave() {
+        clearTimeout(timeout);
+        timeout = setTimeout(async () => {
+            const form = document.getElementById("myForm");
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+            await fetch("/autosave", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+        }, 1000);
+    }
+    document.querySelectorAll("input").forEach(input =>
+        input.addEventListener("input", autosave)
+    );
+    async function loadData() {
+        const res = await fetch("/load");
+        const data = await res.json();
+        if (data) {
+            const form = document.getElementById("myForm");
+            Object.keys(data).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = data[key] || "";
+            });
+        }
+    }
+    loadData();
+
+document.getElementById("submitBtn").addEventListener("click", async () => {
+    const form = document.getElementById("myForm");
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => { data[key] = value; });
+
+    const res = await fetch("/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
+    form.reset();
+    const result = await res.json();
+
+});
+
+</script>
+</body>
+</html>

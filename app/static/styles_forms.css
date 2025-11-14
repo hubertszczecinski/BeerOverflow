@@ -1,0 +1,118 @@
+:root {
+    --primary-color: #FFCC00;
+    --secondary-color: #000000;
+    --accent-color: #FF6600;
+    --dark-gray: #333333;
+    --light-gray: #F5F5F5;
+    --white: #FFFFFF;
+    --text-gray: #666666;
+}
+
+body {
+    background-color: var(--primary-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-navbar {
+    background-color: var(--secondary-color);
+    width: 100%;
+}
+
+.main-navbar .navbar-nav {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.main-navbar .nav-item {
+    flex: 1;
+}
+
+.main-navbar .nav-link {
+    color: var(--white) !important;
+    text-align: center;
+    padding: 1rem;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    font-weight: 500;
+}
+
+.main-navbar .nav-link:last-child {
+    border-right: none;
+}
+
+.main-navbar .nav-link:hover {
+    background-color: rgba(255, 204, 0, 0.1);
+    color: var(--primary-color) !important;
+}
+
+.dashboard-btn .btn-dark {
+    background-color: #000;
+    color: #fff;
+    border: none;
+}
+.dashboard-btn .btn-dark:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    width: 100%;
+}
+
+form#myForm {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 600px;
+    max-width: 90%;
+}
+
+form#myForm label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #000;
+}
+
+form#myForm input {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+form#myForm input:focus {
+    border-color: #fdb813;
+    box-shadow: 0 0 5px rgba(253, 184, 19, 0.5);
+    outline: none;
+}
+
+form#myForm h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #000;
+    font-size: 22px;
+}
+
+.dashboard-btn .btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+}
+
+.dashboard-btn .btn:hover {
+    background-color: #333;
+    color: #fff;
+}

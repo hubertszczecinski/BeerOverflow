@@ -48,3 +48,18 @@ class Transaction(db.Model):
     def __repr__(self):
         return f'<Transaction {self.id} - {self.amount}>'
 
+
+class Forms(db.Model):
+    __tablename__ = 'forms'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200))
+    surname = db.Column(db.String(200))
+    birthday = db.Column(db.String(10))
+    id_number = db.Column(db.String(200))
+    job = db.Column(db.String(200))
+    income = db.Column(db.String(100))
+    address = db.Column(db.String(300))
+    phone_number = db.Column(db.String(50))
+    email = db.Column(db.String(200))
+    def __repr__(self):
+        return f'<Forms {self.id} - {self.id_number}>'

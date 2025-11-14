@@ -4,7 +4,7 @@
 
 
 <template>
-  <div class="component-container text-gray-950 bg-yellow-400 border-b border-gray-200">
+  <div class="component-container text-gray-950 bg-gray-700 border-gray-200">
     <ul class="horizontal-list">
       <li>
         <div>

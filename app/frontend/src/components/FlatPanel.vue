@@ -4,7 +4,7 @@
 
 <template>
 <div class="bg-yellow-400 p-4 rounded-lg shadow-lg">
-  <h1>
+  <h1 class="text-2xl font-bold mb-2">
     Welcome, Hubert!
   </h1>
   <p>Manage your bank account.</p>

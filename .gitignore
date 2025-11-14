@@ -255,3 +255,5 @@ __screenshots__/
 .vscode
 
 .idea
+
+.vite/

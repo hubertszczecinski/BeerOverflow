@@ -146,7 +146,7 @@ export default {
         formData.append('audio', audioBlob, 'recording.wav');
         formData.append('timestamp', new Date().toISOString());
 
-        const response = await fetch('http://localhost:7000/upload', {
+        const response = await fetch('http://localhost:7000', {
           method: 'POST',
           body: formData,
         });

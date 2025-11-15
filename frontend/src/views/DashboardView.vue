@@ -51,6 +51,7 @@
               </tr>
               </tbody>
             </table>
+            <UserPhoto />
           </div>
         </div>
       </div>
@@ -73,6 +74,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth';
 import ProductCard from '@/components/ProductCard.vue';
+import UserPhoto from "@/components/UserPhoto.vue";
 const authStore = useAuthStore();
 
 const formatDate = (dateString) => {

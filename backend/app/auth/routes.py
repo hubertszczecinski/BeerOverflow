@@ -1,4 +1,5 @@
-from flask import jsonify, request
+from flask import jsonify, request, send_file
+import io
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.auth import bp
@@ -140,3 +141,15 @@ def get_current_user():
         }
     }), 200
 
+@bp.route('/photo', methods=['GET'])
+@login_required
+def get_my_photo():
+    """Return the authenticated user's photo (requires login)."""
+    if not current_user.photo:
+        return jsonify({'message': 'Photo not found'}), 404
+    return send_file(
+        io.BytesIO(current_user.photo),
+        mimetype='image/jpeg',
+        as_attachment=False,
+        download_name=f'{current_user.username}_photo.jpg'
+    )

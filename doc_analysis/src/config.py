@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     ner_model_name: str = "boltuix/NeuroBERT-NER"
 
     # Groq
-    groq_api_key: Optional[str] = str(Path(os.getenv("GROQ_API_KEY")))
+    groq_api_key: Optional[str] = os.getenv("GROQ_API_KEY")
     groq_model: str = "llama-3.3-70b-versatile"
 
     # Chunking (character-based; used as fallback)

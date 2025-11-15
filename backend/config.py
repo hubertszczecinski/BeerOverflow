@@ -28,5 +28,7 @@ class Config:
     REMEMBER_COOKIE_SECURE = (DEPLOYMENT_MODE == 'production')  # Require HTTPS in production
 
 config = {
-    'default': Config
+    'default': Config,
+    'development': Config,
+    'production': Config
 }

@@ -2,7 +2,7 @@ import os
 import requests
 
 
-class FaceRecognition:
+class FaceRecognitionHandler:
     def __init__(self, base_url: str | None = None, timeout: float = 15.0):
         # Default to the compose service name and internal port of the face API
         self.base_url = base_url or os.getenv("FACE_API_URL", "http://face-recognition:8000")

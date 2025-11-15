@@ -84,7 +84,7 @@ export default {
         this.uploadStatus = 'Sending audio...';
 
         // Send to your localhost endpoint
-        const response = await fetch('http://localhost:8000/', {
+        const response = await fetch('http://localhost/voice-assist', {
           method: 'POST',
           body: wavBlob,
           headers: {

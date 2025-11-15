@@ -1,13 +1,13 @@
 <template>
-  <div class="voice-recorder">
-    <button
-        @click="toggleRecording"
-        :class="['record-btn', { 'recording': isRecording }]"
-    >
-      {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
-    </button>
-    <p v-if="isRecording">Recording... {{ recordingTime }}s</p>
-    <p v-if="uploadStatus">{{ uploadStatus }}</p>
+  <div class="voicebox d-flex flex-column align-items-center justify-content-center text-center p-4 rounded-3">
+    <!-- Button Container -->
+    <div class="button-container mb-3">
+      <button class="voice-navigation"
+              @click="toggleRecording"
+              :class="['record-btn', { 'recording': isRecording }]">
+        <i class="fas fa-microphone"></i>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -207,7 +207,11 @@ export default {
   background-color: #f44336;
 }
 
-.record-btn:hover {
-  opacity: 0.8;
+.voicebox {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
 }
+
 </style>

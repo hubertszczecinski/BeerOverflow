@@ -21,3 +21,4 @@ tzdata==2025.2
 urllib3==2.5.0
 Werkzeug==3.0.1
 PyJWT==2.9.0
+PyJWT==2.9.0

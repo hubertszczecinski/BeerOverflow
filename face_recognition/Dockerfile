@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.20.0-gpu
+FROM tensorflow/tensorflow:2.20.0
 
 # Install OS dependencies for OpenCV
 RUN apt-get update && apt-get install -y \

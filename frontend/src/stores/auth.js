@@ -22,7 +22,11 @@ export const useAuthStore = defineStore('auth', {
                 if (!response.ok) {
                     throw new Error('Login failed');
                 }
-
+                const ct = response.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    const txt = await response.text();
+                    throw new Error(`Unexpected non-JSON response: ${txt.slice(0,120)}`);
+                }
                 const data = await response.json();
                 this.user = data.user; // Assuming API returns { user: {...} }
 
@@ -55,8 +59,17 @@ export const useAuthStore = defineStore('auth', {
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Registration failed');
+                    let message = 'Registration failed';
+                    try {
+                        const ct = response.headers.get('content-type') || '';
+                        if (ct.includes('application/json')) {
+                            const errorData = await response.json();
+                            message = errorData.message || message;
+                        } else {
+                            message = (await response.text()).slice(0,200) || message;
+                        }
+                    } catch {}
+                    throw new Error(message);
                 }
 
                 // On success, redirect to login

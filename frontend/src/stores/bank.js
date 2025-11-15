@@ -281,6 +281,18 @@ export const useBankStore = defineStore('bank', () => {
         await saveEncryptedQueues();
     }
 
+    async function cancelCommittedTransaction(id) {
+        const idx = committedTransactions.value.findIndex(tx => tx.id === id);
+        if (idx === -1) return false;
+        committedTransactions.value.splice(idx, 1);
+        await saveEncryptedQueues();
+        // If we removed the first item, we may need to restart worker for next in queue
+        if (idx === 0) {
+            triggerUploadWorker();
+        }
+        return true;
+    }
+
     // --- ENCRYPTION & PERSISTENCE ---
 
     async function saveEncryptedQueues() {
@@ -527,6 +539,7 @@ export const useBankStore = defineStore('bank', () => {
         addTransactionToStage,
         commitAndAuthorizeStagedChanges, // Expose the new action
         discardStagedChanges,
+        cancelCommittedTransaction,
         triggerUploadWorker, // Allow UI to trigger a sync check
         hasEncryptedData // Allow checking for encrypted data
     };

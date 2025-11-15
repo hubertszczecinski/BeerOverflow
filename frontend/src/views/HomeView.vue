@@ -1,31 +1,26 @@
 <template>
-  <div class="background-div">
-  <div class="hero-banner">
-    <!-- Background div -->
+  <div class="hero-section">
+    <div class="hero-banner">
+      <div class="container">
+        <h1 ref="typewriterHeader" class="typewriter-header">The Bank by Your Side</h1>
+        <p class="subtitle">Modern banking solutions for you</p>
 
+        <template v-if="!authStore.isLoggedIn">
+          <router-link to="/register" class="btn btn-primary btn-lg me-3 rounded-pill" style="border: 1px solid #000;">
+            <i class="fas fa-user-plus"></i> Open Account
+          </router-link>
+          <router-link to="/login" class="btn btn-outline-primary btn-lg rounded-pill" style="color:black; border: 1px solid #000;">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </router-link>
+        </template>
 
-    <div class="container">
-      <h1 ref="typewriterHeader" class="typewriter-header">The Bank by Your Side</h1>
-      <p class="subtitle">Modern banking solutions for you</p>
-
-      <template v-if="!authStore.isLoggedIn">
-        <router-link to="/register" class="btn btn-primary btn-lg me-3 rounded-pill" style="border: 1px solid #000;">
-          <i class="fas fa-user-plus"></i> Open Account
-        </router-link>
-        <router-link to="/login" class="btn btn-outline-primary btn-lg rounded-pill" style="color:black; border: 1px solid #000;">
-          <i class="fas fa-sign-in-alt"></i> Login
-        </router-link>
-      </template>
-
-      <template v-else>
-        <router-link to="/dashboard" class="btn btn-primary btn-lg rounded-pill">
-          <i class="fas fa-home"></i> Go to Dashboard
-        </router-link>
-      </template>
+        <template v-else>
+          <router-link to="/dashboard" class="btn btn-primary btn-lg rounded-pill">
+            <i class="fas fa-home"></i> Go to Dashboard
+          </router-link>
+        </template>
+      </div>
     </div>
-
-
-  </div>
   </div>
   <VoiceNavBox />
 </template>
@@ -113,6 +108,15 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+
+.hero-section {
+  height: 100vh;
+  background-image: url('@/assets/hero-bg.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
 .hero-banner {
   position: relative;
   min-height: 100vh; /* Ensure it stretches at least to viewport height */

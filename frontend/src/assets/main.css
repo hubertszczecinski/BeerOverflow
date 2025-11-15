@@ -207,10 +207,6 @@ body {
 
 /* Hero Section */
 .hero-banner {
-    background-image: url('@/assets/hero-bg.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
     padding: 4rem 0;
     margin-bottom: 3rem;
     text-align: center;
@@ -249,7 +245,7 @@ body {
     background-color: var(--secondary-color);
     color: var(--white);
     padding: 3rem 0 1.5rem;
-    margin-top: 4rem;
+    /*margin-top: 4rem; */
 }
 
 .footer h5 {
@@ -297,10 +293,5 @@ body {
 
 .main-content {
     min-height: calc(100vh - 300px);
-    padding: 2rem 0;
-}
-
-.main-content {
-    min-height: calc(100vh - 300px);
-    padding: 2rem 0;
+    /*padding: 2rem 0; */
 }

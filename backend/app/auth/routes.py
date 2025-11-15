@@ -1,12 +1,12 @@
 from flask import jsonify, request, send_file, current_app
 import io
 import os
-import jwt
 import requests
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.auth import bp
 from app.models import User
+from app.auth.mfa_utils import generate_mfa_token
 from datetime import datetime, timedelta
 
 
@@ -193,24 +193,14 @@ def verify_face():
 
         if is_verified:
             # Generate a 60-minute MFA token if verified
-            mfa_token_payload = {
-                'sub': current_user.id,
-                'scope': 'mfa_commit', # Scope this token only for this action
-                'iat': datetime.utcnow(),
-                'exp': datetime.utcnow() + timedelta(minutes=60)
-            }
-            mfa_token = jwt.encode(
-                mfa_token_payload,
-                current_app.config['SECRET_KEY'],
-                algorithm="HS256"
-            )
+            mfa_token, expiry = generate_mfa_token(current_user.id, scope='mfa_commit', duration_minutes=60)
 
             return jsonify({
                 'verified': True,
                 'distance': data.get('distance'),
                 'threshold': data.get('threshold'),
                 'mfaToken': mfa_token, # Send the new token to the client
-                'mfaTokenExpiry': mfa_token_payload['exp'].isoformat() + 'Z'
+                'mfaTokenExpiry': expiry.isoformat() + 'Z'
             }), 200
         else:
             # Verification failed

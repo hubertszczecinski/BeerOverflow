@@ -1,217 +1,284 @@
 <template>
-  <div class="voicebox d-flex flex-column align-items-center justify-content-center text-center p-4 rounded-3">
-    <!-- Button Container -->
-    <div class="button-container mb-3">
-      <button class="voice-navigation"
-              @click="toggleRecording"
-              :class="['record-btn', { 'recording': isRecording }]">
-        <i class="fas fa-microphone"></i>
+  <div class="audio-recorder">
+    <h2>Audio Recorder</h2>
+
+    <div class="controls">
+      <button
+          @click="startRecording"
+          :disabled="isRecording || isLoading"
+          class="btn btn-start"
+      >
+        Start Recording
       </button>
+
+      <button
+          @click="stopRecording"
+          :disabled="!isRecording || isLoading"
+          class="btn btn-stop"
+      >
+        Stop Recording
+      </button>
+    </div>
+
+    <div v-if="isRecording" class="recording-indicator">
+      ● Recording...
+    </div>
+
+    <div v-if="audioUrl" class="preview">
+      <h3>Preview:</h3>
+      <audio :src="audioUrl" controls class="audio-preview"></audio>
+    </div>
+
+    <div v-if="isLoading" class="loading">
+      Sending audio...
+    </div>
+
+    <div v-if="message" class="message" :class="{ error: isError }">
+      {{ message }}
     </div>
   </div>
 </template>
 
 <script>
+import { MediaRecorder, register } from 'extendable-media-recorder';
+import { connect } from 'extendable-media-recorder-wav-encoder';
+
 export default {
-  name: 'VoiceRecorder',
+  name: 'AudioRecorder',
   data() {
     return {
       isRecording: false,
+      isLoading: false,
       mediaRecorder: null,
       audioChunks: [],
-      recordingTime: 0,
-      recordingTimer: null,
-      uploadStatus: ''
+      audioUrl: null,
+      message: '',
+      isError: false
+    };
+  },
+  async mounted() {
+    try {
+      // Register the WAV encoder
+      await register(await connect());
+      console.log('WAV encoder registered successfully');
+    } catch (error) {
+      console.error('Failed to register WAV encoder:', error);
+      this.showMessage('Failed to initialize audio recorder', true);
     }
   },
   methods: {
-    async toggleRecording() {
-      if (this.isRecording) {
-        this.stopRecording();
-      } else {
-        await this.startRecording();
-      }
-    },
-
     async startRecording() {
       try {
-        // Request microphone access
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
         this.audioChunks = [];
-        this.mediaRecorder = new MediaRecorder(stream);
+        this.audioUrl = null;
+        this.message = '';
 
+        // Get user media (audio only)
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            sampleRate: 44100,
+            echoCancellation: true,
+            noiseSuppression: true
+          }
+        });
+
+        // Create media recorder with WAV format
+        this.mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/wav'
+        });
+
+        // Collect data when available
         this.mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
+          if (event.data && event.data.size > 0) {
             this.audioChunks.push(event.data);
           }
         };
 
+        // Handle recording stop
         this.mediaRecorder.onstop = this.handleRecordingStop;
 
+        // Start recording
         this.mediaRecorder.start();
         this.isRecording = true;
-        this.uploadStatus = '';
-        this.startRecordingTimer();
+        this.showMessage('Recording started...');
 
       } catch (error) {
-        console.error('Error accessing microphone:', error);
-        this.uploadStatus = 'Error accessing microphone';
+        console.error('Error starting recording:', error);
+        this.showMessage('Error starting recording: ' + error.message, true);
       }
     },
 
     stopRecording() {
       if (this.mediaRecorder && this.isRecording) {
         this.mediaRecorder.stop();
-        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
         this.isRecording = false;
-        this.stopRecordingTimer();
+
+        // Stop all tracks in the stream
+        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
       }
     },
 
-    handleRecordingStop() {
-      const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-      this.convertAndSendAudio(audioBlob);
-    },
-
-    async convertAndSendAudio(blob) {
+    async handleRecordingStop() {
       try {
-        this.uploadStatus = 'Converting audio...';
+        this.isLoading = true;
 
-        // Convert to WAV format
-        const wavBlob = await this.convertToWav(blob);
+        // Create blob from recorded chunks
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
 
-        this.uploadStatus = 'Sending audio...';
+        // Create URL for preview
+        this.audioUrl = URL.createObjectURL(audioBlob);
 
-        // Send to your localhost endpoint
-        const response = await fetch('http://localhost:8000/', {
-          method: 'POST',
-          body: wavBlob,
-          headers: {
-            'Content-Type': 'audio/wav',
-          }
-        });
-
-        if (response.ok) {
-          const result = await response.text();
-          this.uploadStatus = `Success: ${result}`;
-        } else {
-          this.uploadStatus = 'Upload failed';
-        }
+        // Send to server
+        await this.sendAudioToServer(audioBlob);
 
       } catch (error) {
-        console.error('Error processing audio:', error);
-        this.uploadStatus = 'Error processing audio';
+        console.error('Error processing recording:', error);
+        this.showMessage('Error processing recording: ' + error.message, true);
+      } finally {
+        this.isLoading = false;
       }
     },
 
-    async convertToWav(blob) {
-      // Create an AudioContext to process the audio
-      const audioContext = new AudioContext();
+    async sendAudioToServer(audioBlob) {
+      try {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+        formData.append('timestamp', new Date().toISOString());
 
-      // Read the blob as array buffer
-      const arrayBuffer = await blob.arrayBuffer();
+        const response = await fetch('http://localhost:7000/upload', {
+          method: 'POST',
+          body: formData,
+        });
 
-      // Decode the audio data
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-      // Convert to WAV format
-      const wavBuffer = this.audioBufferToWav(audioBuffer);
-
-      return new Blob([wavBuffer], { type: 'audio/wav' });
-    },
-
-    audioBufferToWav(audioBuffer) {
-      const numChannels = audioBuffer.numberOfChannels;
-      const sampleRate = audioBuffer.sampleRate;
-      const length = audioBuffer.length * numChannels * 2;
-      const buffer = new ArrayBuffer(44 + length);
-      const view = new DataView(buffer);
-
-      // WAV header
-      const writeString = (offset, string) => {
-        for (let i = 0; i < string.length; i++) {
-          view.setUint8(offset + i, string.charCodeAt(i));
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
         }
-      };
 
-      writeString(0, 'RIFF');
-      view.setUint32(4, 36 + length, true);
-      writeString(8, 'WAVE');
-      writeString(12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, numChannels, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * numChannels * 2, true);
-      view.setUint16(32, numChannels * 2, true);
-      view.setUint16(34, 16, true);
-      writeString(36, 'data');
-      view.setUint32(40, length, true);
+        const result = await response.json();
+        this.showMessage('Audio sent successfully! Server response: ' + JSON.stringify(result));
 
-      // Write audio data
-      const interleaved = new Float32Array(length / 2);
-      for (let channel = 0; channel < numChannels; channel++) {
-        const channelData = audioBuffer.getChannelData(channel);
-        for (let i = 0; i < channelData.length; i++) {
-          interleaved[i * numChannels + channel] = channelData[i];
-        }
+      } catch (error) {
+        console.error('Error sending audio to server:', error);
+        this.showMessage('Error sending audio: ' + error.message, true);
       }
-
-      let offset = 44;
-      for (let i = 0; i < interleaved.length; i++) {
-        const sample = Math.max(-1, Math.min(1, interleaved[i]));
-        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-        offset += 2;
-      }
-
-      return buffer;
     },
 
-    startRecordingTimer() {
-      this.recordingTime = 0;
-      this.recordingTimer = setInterval(() => {
-        this.recordingTime++;
-      }, 1000);
-    },
+    showMessage(text, isError = false) {
+      this.message = text;
+      this.isError = isError;
 
-    stopRecordingTimer() {
-      if (this.recordingTimer) {
-        clearInterval(this.recordingTimer);
-        this.recordingTimer = null;
+      // Auto-clear success messages after 5 seconds
+      if (!isError) {
+        setTimeout(() => {
+          if (this.message === text) {
+            this.message = '';
+          }
+        }, 5000);
       }
     }
   },
-
   beforeUnmount() {
-    this.stopRecordingTimer();
+    // Clean up
     if (this.mediaRecorder && this.isRecording) {
       this.mediaRecorder.stop();
     }
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+    }
   }
-}
+};
 </script>
 
 <style scoped>
-.record-btn {
+.audio-recorder {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.controls {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
   padding: 10px 20px;
-  font-size: 16px;
   border: none;
   border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-start {
   background-color: #4CAF50;
   color: white;
-  cursor: pointer;
 }
 
-.record-btn.recording {
+.btn-start:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.btn-stop {
   background-color: #f44336;
+  color: white;
 }
 
-.voicebox {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+.btn-stop:hover:not(:disabled) {
+  background-color: #da190b;
 }
 
+.recording-indicator {
+  color: #f44336;
+  font-weight: bold;
+  margin: 10px 0;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.preview {
+  margin: 20px 0;
+}
+
+.audio-preview {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.loading {
+  color: #2196F3;
+  font-style: italic;
+  margin: 10px 0;
+}
+
+.message {
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.message:not(.error) {
+  background-color: #dff0d8;
+  color: #3c763d;
+  border: 1px solid #d6e9c6;
+}
+
+.message.error {
+  background-color: #f2dede;
+  color: #a94442;
+  border: 1px solid #ebccd1;
+}
 </style>

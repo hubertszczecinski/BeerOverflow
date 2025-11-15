@@ -1,5 +1,4 @@
 services:
-  # The Flask Backend Service
   backend:
     build:
       context: ./backend  # Path to the backend's Dockerfile and code
@@ -36,7 +35,6 @@ services:
     #  timeout: 10s
     #  retries: 3
 
-  # The Vue.js Frontend Service
   frontend:
     build:
       context: ./frontend # Path to the frontend's Dockerfile and code
@@ -67,8 +65,6 @@ services:
     profiles:
       - production  # Only start in production
 
-# Define the network (optional, but good practice)
-# This ensures both containers are on the same network.
 networks:
   default:
     driver: bridge

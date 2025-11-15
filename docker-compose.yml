@@ -58,7 +58,8 @@ services:
       context: ./whisper_endpoint
     container_name: voice-assist-service
     ports:
-        - "7000:7000"
+        - "7000:8000"
+        - "8265:8265"
   # The Vue.js Frontend Service
   frontend:
     build:

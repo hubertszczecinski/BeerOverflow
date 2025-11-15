@@ -6,5 +6,5 @@ COPY whisper-endpoint.py whisper-endpoint.py
 COPY id_matching.py id_matching.py
 COPY id.csv id.csv
 RUN pip install -r requirements.txt
-EXPOSE 7000
+EXPOSE 8000
 ENTRYPOINT ["serve", "run", "whisper-endpoint:depl"]

@@ -1,100 +1,45 @@
 <template>
-  <div class="voice-navigation">
+  <div class="voice-recorder">
     <button
-        @click="toggleListening"
-        :class="['voice-btn', { 'listening': isListening, 'error': hasError }]"
-        :title="isListening ? 'Stop listening' : 'Start voice commands'"
+        @click="toggleRecording"
+        :class="['record-btn', { 'recording': isRecording }]"
     >
-      <i class="fas fa-microphone"></i>
+      {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
     </button>
-
-    <div v-if="isListening" class="voice-status">
-      <div class="pulse-animation"></div>
-      <span>Listening... {{ feedback }}</span>
-    </div>
-
-    <div v-if="availableCommands.length > 0" class="voice-commands-help">
-      <h4>Voice Commands:</h4>
-      <div v-for="cmd in availableCommands" :key="cmd.command" class="command-item">
-        <strong>"{{ cmd.command }}"</strong> - {{ cmd.description }}
-      </div>
-    </div>
+    <p v-if="isRecording">Recording... {{ recordingTime }}s</p>
+    <p v-if="uploadStatus">{{ uploadStatus }}</p>
   </div>
 </template>
 
 <script>
-import io from 'socket.io-client';
-
 export default {
-  name: 'VoiceNavigation',
+  name: 'VoiceRecorder',
   data() {
     return {
-      isListening: false,
-      hasError: false,
-      feedback: '',
+      isRecording: false,
       mediaRecorder: null,
       audioChunks: [],
-      socket: null,
-      availableCommands: []
-    };
-  },
-  async mounted() {
-    await this.setupVoiceNavigation();
-    await this.loadVoiceCommands();
-  },
-  // Vue 3 lifecycle hook
-  beforeUnmount() {
-    this.cleanup();
+      recordingTime: 0,
+      recordingTimer: null,
+      uploadStatus: ''
+    }
   },
   methods: {
-    async setupVoiceNavigation() {
-      try {
-        // Setup WebSocket connection (Vite: use VITE_WS_URL)
-        const wsUrl = (import.meta && import.meta.env && import.meta.env.VITE_WS_URL) || 'http://localhost:5000';
-        this.socket = io(wsUrl);
-
-        this.socket.on('connect', () => {
-          this.socket.emit('voice_connect');
-        });
-
-        this.socket.on('navigate_to', (data) => {
-          this.handleNavigation(data);
-        });
-
-        this.socket.on('trigger_action', (data) => {
-          this.triggerAction(data);
-        });
-
-        this.socket.on('voice_feedback', (data) => {
-          this.showFeedback(data.text, data.type);
-        });
-
-        this.socket.on('voice_error', (data) => {
-          this.showError(data.error);
-        });
-
-        // Setup audio recording
-        await this.setupAudioRecording();
-
-      } catch (error) {
-        console.error('Voice navigation setup failed:', error);
-        this.showError('Voice setup failed');
+    async toggleRecording() {
+      if (this.isRecording) {
+        this.stopRecording();
+      } else {
+        await this.startRecording();
       }
     },
 
-    async setupAudioRecording() {
+    async startRecording() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 16000
-          }
-        });
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        this.mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm;codecs=opus'
-        });
+        this.audioChunks = [];
+        this.mediaRecorder = new MediaRecorder(stream);
 
         this.mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -102,205 +47,167 @@ export default {
           }
         };
 
-        this.mediaRecorder.onstop = () => {
-          this.processAudioRecording();
-        };
+        this.mediaRecorder.onstop = this.handleRecordingStop;
+
+        this.mediaRecorder.start();
+        this.isRecording = true;
+        this.uploadStatus = '';
+        this.startRecordingTimer();
 
       } catch (error) {
-        console.error('Audio setup failed:', error);
-        this.showError('Microphone access denied');
+        console.error('Error accessing microphone:', error);
+        this.uploadStatus = 'Error accessing microphone';
       }
     },
 
-    async loadVoiceCommands() {
-      try {
-        const response = await fetch('/api/voice/commands');
-        const data = await response.json();
-        this.availableCommands = data.commands || [];
-      } catch (error) {
-        console.error('Failed to load voice commands:', error);
-      }
-    },
-
-    toggleListening() {
-      if (this.isListening) {
-        this.stopListening();
-      } else {
-        this.startListening();
-      }
-    },
-
-    startListening() {
-      if (!this.mediaRecorder) {
-        this.showError('Microphone not available');
-        return;
-      }
-
-      this.isListening = true;
-      this.hasError = false;
-      this.feedback = 'Speak now...';
-      this.audioChunks = [];
-      this.mediaRecorder.start(250); // Collect data every 250ms
-
-      // Auto-stop after 5 seconds
-      this.autoStopTimer = setTimeout(() => {
-        this.stopListening();
-      }, 5000);
-    },
-
-    stopListening() {
-      if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+    stopRecording() {
+      if (this.mediaRecorder && this.isRecording) {
         this.mediaRecorder.stop();
+        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        this.isRecording = false;
+        this.stopRecordingTimer();
       }
-      this.isListening = false;
-      clearTimeout(this.autoStopTimer);
     },
 
-    async processAudioRecording() {
-      try {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm;codecs=opus' });
+    handleRecordingStop() {
+      const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+      this.convertAndSendAudio(audioBlob);
+    },
 
-        // Convert to base64 for WebSocket
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64Audio = reader.result.split(',')[1];
-          this.socket.emit('voice_data', { audio: base64Audio });
-        };
-        reader.readAsDataURL(audioBlob);
+    async convertAndSendAudio(blob) {
+      try {
+        this.uploadStatus = 'Converting audio...';
+
+        // Convert to WAV format
+        const wavBlob = await this.convertToWav(blob);
+
+        this.uploadStatus = 'Sending audio...';
+
+        // Send to your localhost endpoint
+        const response = await fetch('http://localhost:8000/', {
+          method: 'POST',
+          body: wavBlob,
+          headers: {
+            'Content-Type': 'audio/wav',
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.text();
+          this.uploadStatus = `Success: ${result}`;
+        } else {
+          this.uploadStatus = 'Upload failed';
+        }
 
       } catch (error) {
-        console.error('Audio processing failed:', error);
-        this.showError('Failed to process audio');
+        console.error('Error processing audio:', error);
+        this.uploadStatus = 'Error processing audio';
       }
     },
 
-    handleNavigation(data) {
-      this.showFeedback(`Navigating to ${data.recognized_text}`, 'success');
+    async convertToWav(blob) {
+      // Create an AudioContext to process the audio
+      const audioContext = new AudioContext();
 
-      // Use your existing router
-      this.$router.push(data.url);
+      // Read the blob as array buffer
+      const arrayBuffer = await blob.arrayBuffer();
+
+      // Decode the audio data
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+      // Convert to WAV format
+      const wavBuffer = this.audioBufferToWav(audioBuffer);
+
+      return new Blob([wavBuffer], { type: 'audio/wav' });
     },
 
-    triggerAction(data) {
-      this.showFeedback(`Executing: ${data.recognized_text}`, 'success');
+    audioBufferToWav(audioBuffer) {
+      const numChannels = audioBuffer.numberOfChannels;
+      const sampleRate = audioBuffer.sampleRate;
+      const length = audioBuffer.length * numChannels * 2;
+      const buffer = new ArrayBuffer(44 + length);
+      const view = new DataView(buffer);
 
-      // Emit global event for components to handle
-      window.dispatchEvent(new CustomEvent('voice-action', {
-        detail: data
-      }));
-    },
+      // WAV header
+      const writeString = (offset, string) => {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      };
 
-    showFeedback(text, type = 'info') {
-      this.feedback = text;
-      this.hasError = type === 'error';
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + length, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * numChannels * 2, true);
+      view.setUint16(32, numChannels * 2, true);
+      view.setUint16(34, 16, true);
+      writeString(36, 'data');
+      view.setUint32(40, length, true);
 
-      // Clear feedback after 3 seconds
-      setTimeout(() => {
-        this.feedback = '';
-        this.hasError = false;
-      }, 3000);
-    },
-
-    showError(message) {
-      this.showFeedback(message, 'error');
-      this.isListening = false;
-    },
-
-    cleanup() {
-      if (this.socket) {
-        this.socket.disconnect();
+      // Write audio data
+      const interleaved = new Float32Array(length / 2);
+      for (let channel = 0; channel < numChannels; channel++) {
+        const channelData = audioBuffer.getChannelData(channel);
+        for (let i = 0; i < channelData.length; i++) {
+          interleaved[i * numChannels + channel] = channelData[i];
+        }
       }
-      if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-        this.mediaRecorder.stop();
+
+      let offset = 44;
+      for (let i = 0; i < interleaved.length; i++) {
+        const sample = Math.max(-1, Math.min(1, interleaved[i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+        offset += 2;
+      }
+
+      return buffer;
+    },
+
+    startRecordingTimer() {
+      this.recordingTime = 0;
+      this.recordingTimer = setInterval(() => {
+        this.recordingTime++;
+      }, 1000);
+    },
+
+    stopRecordingTimer() {
+      if (this.recordingTimer) {
+        clearInterval(this.recordingTimer);
+        this.recordingTimer = null;
       }
     }
+  },
+
+  beforeUnmount() {
+    this.stopRecordingTimer();
+    if (this.mediaRecorder && this.isRecording) {
+      this.mediaRecorder.stop();
+    }
   }
-};
+}
 </script>
 
 <style scoped>
-.voice-navigation {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
-.voice-btn {
-  background: #4CAF50;
-  color: white;
+.record-btn {
+  padding: 10px 20px;
+  font-size: 16px;
   border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
 }
 
-.voice-btn.listening {
-  background: #2196F3;
-  transform: scale(1.1);
+.record-btn.recording {
+  background-color: #f44336;
 }
 
-.voice-btn.error {
-  background: #f44336;
-}
-
-.voice-status {
-  position: absolute;
-  bottom: 70px;
-  right: 0;
-  background: white;
-  padding: 10px 15px;
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.pulse-animation {
-  width: 12px;
-  height: 12px;
-  background: #2196F3;
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-.voice-commands-help {
-  position: absolute;
-  bottom: 70px;
-  right: 0;
-  width: 300px;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.voice-commands-help h4 {
-  margin: 0 0 10px 0;
-  color: #333;
-}
-
-.command-item {
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 12px;
-}
-
-.command-item:last-child {
-  border-bottom: none;
-}
-
-@keyframes pulse {
-  0% { transform: scale(0.8); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(0.8); opacity: 1; }
+.record-btn:hover {
+  opacity: 0.8;
 }
 </style>

@@ -36,7 +36,7 @@ const routes = [
         path: '/dashboard',
         name: 'Dashboard',
         component: DashboardView,
-        meta: { requiresAuth: true }, // Add meta field for protected routes
+        meta: { requiresAuth: false }, // Add meta field for protected routes
     },
 
     {

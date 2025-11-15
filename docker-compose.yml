@@ -85,3 +85,6 @@ networks:
     driver: bridge
 volumes:
   deepface-weights:
+  backend-data:
+  letsencrypt-certs:
+  certbot-www:

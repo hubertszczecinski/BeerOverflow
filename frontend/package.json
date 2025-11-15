@@ -15,6 +15,8 @@
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
+    "extendable-media-recorder": "^9.2.31",
+    "extendable-media-recorder-wav-encoder": "^7.0.132",
     "pinia": "^3.0.4",
     "socket.io-client": "^4.8.1",
     "vue": "^3.5.22",

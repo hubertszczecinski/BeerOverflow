@@ -1,15 +1,13 @@
-from flask import jsonify, request, send_file
+from flask import jsonify, request, send_file, current_app
 import io
 import os
+import jwt
 import requests
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.auth import bp
 from app.models import User
-from app.FaceRecognitionHandler import FaceRecognitionHandler
-from datetime import datetime
-
-face_recognition_handler = FaceRecognitionHandler()
+from datetime import datetime, timedelta
 
 
 @bp.route('/login', methods=['POST'])
@@ -163,7 +161,7 @@ def verify_face():
     """
     Use the stored DB photo of the authenticated user and the uploaded image
     to verify the face via the external FACE_API_URL service.
-    Expects multipart/form-data with a single file field named 'image'.
+    On success, also generates an MFA token.
     """
     if not current_user.photo:
         return jsonify({'message': 'Stored user photo not found'}), 404
@@ -189,12 +187,39 @@ def verify_face():
         resp = requests.post(verify_url, files=files, timeout=30)
         if resp.status_code != 200:
             return jsonify({'message': 'Verification service error', 'detail': resp.text}), resp.status_code
+
         data = resp.json()
-        return jsonify({
-            'verified': data.get('verified', False),
-            'distance': data.get('distance'),
-            'threshold': data.get('threshold'),
-            'reason': data.get('reason')
-        }), 200
+        is_verified = data.get('verified', False)
+
+        if is_verified:
+            # Generate a 60-minute MFA token if verified
+            mfa_token_payload = {
+                'sub': current_user.id,
+                'scope': 'mfa_commit', # Scope this token only for this action
+                'iat': datetime.utcnow(),
+                'exp': datetime.utcnow() + timedelta(minutes=60)
+            }
+            mfa_token = jwt.encode(
+                mfa_token_payload,
+                current_app.config['SECRET_KEY'],
+                algorithm="HS256"
+            )
+
+            return jsonify({
+                'verified': True,
+                'distance': data.get('distance'),
+                'threshold': data.get('threshold'),
+                'mfaToken': mfa_token, # Send the new token to the client
+                'mfaTokenExpiry': mfa_token_payload['exp'].isoformat() + 'Z'
+            }), 200
+        else:
+            # Verification failed
+            return jsonify({
+                'verified': False,
+                'distance': data.get('distance'),
+                'threshold': data.get('threshold'),
+                'reason': data.get('reason')
+            }), 200
+
     except requests.exceptions.RequestException as e:
         return jsonify({'message': 'Could not reach face verification service', 'error': str(e)}), 502

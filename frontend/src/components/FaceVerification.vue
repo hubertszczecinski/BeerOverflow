@@ -118,7 +118,16 @@ async function verifyFace() {
     }
 
     status.value = data.verified ? 'success' : 'error'
-    if (data.verified) emit('verified')
+    if (data.verified) {
+      // Emit the full data object including mfaToken and mfaTokenExpiry
+      emit('verified', {
+        verified: true,
+        mfaToken: data.mfaToken || data.mfa_token, // Support both naming conventions
+        mfaTokenExpiry: data.mfaTokenExpiry || data.mfa_token_expiry || new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 min default
+        distance: data.distance,
+        threshold: data.threshold,
+      })
+    }
   } catch (e) {
     status.value = 'error'
     errorMessage.value = e?.message || 'Network error'

@@ -4,7 +4,6 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import DashboardView from '../views/DashboardView.vue';
-import FormView from '../views/FormView.vue';
 
 import AccountsView from '../views/tabs/AccountsView.vue';
 import SavingsView from '../views/tabs/SavingsView.vue';
@@ -15,6 +14,7 @@ import MagazineView from '../views/tabs/MagazineView.vue';
 import OperationsView from "@/views/OperationsView.vue";
 import ReviewChangesView from "@/views/ReviewChangesView.vue";
 import ChangesUploadView from "@/views/ChangesUploadView.vue";
+import FormView from "@/views/FormView.vue";
 
 const routes = [
     {

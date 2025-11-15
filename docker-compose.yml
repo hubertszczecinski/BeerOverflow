@@ -37,6 +37,9 @@ services:
     build:
       context: ./doc_analysis
     container_name: doc-analysis-service
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - BANKING_QA_GROQ_API_KEY=${GROQ_API_KEY}
     ports:
       - "9000:9000"
     volumes:

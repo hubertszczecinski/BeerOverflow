@@ -103,6 +103,7 @@ const routes = [
         name: 'Magazine',
         component: MagazineView,
     },
+
 ];
 
 const router = createRouter({

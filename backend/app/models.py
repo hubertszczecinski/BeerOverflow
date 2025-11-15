@@ -66,7 +66,7 @@ class Account(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    transaction_events = db.relationship('TransactionEvent', backref='account', lazy='dynamic',
+    transaction_events = db.relationship('TransactionEvent', backref='account', lazy='dynamic', 
                                         foreign_keys='TransactionEvent.account_id')
 
     def __repr__(self):
@@ -127,7 +127,7 @@ class TransactionEvent(db.Model):
     risk_global = db.Column(db.Float, nullable=True)
     risk_combined = db.Column(db.Float, nullable=True)
     flags = db.Column(Text, nullable=True)  # JSON array of strings
-
+    
     # New fields for transaction processing
     status = db.Column(db.String(20), nullable=True, default='PENDING', index=True)  # PENDING, PROCESSING, COMPLETED, FAILED
     processed_at = db.Column(db.DateTime, nullable=True)
@@ -141,7 +141,7 @@ class TransactionEvent(db.Model):
             return json.loads(self.flags) if self.flags else []
         except Exception:
             return []
-
+    
     def to_dict(self):
         """Convert transaction event to dictionary for JSON serialization"""
         return {

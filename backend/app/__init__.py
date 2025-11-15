@@ -66,7 +66,7 @@ def create_app(config_name=None):
     app.register_blueprint(auth_bp, url_prefix='/api')
 
     from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
+    app.register_blueprint(main_bp, url_prefix='/api')
 
     # API blueprint that exposes src.pipeline features under /api
     try:

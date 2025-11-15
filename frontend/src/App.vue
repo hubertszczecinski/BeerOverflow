@@ -1,36 +1,49 @@
-<script setup>
-import TopNavBar from '@/components/TopNavBar.vue'
-import MainNavBar from '@/components/MainNavBar.vue'
-import Footer from '@/components/Footer.vue'
-import FlashMessages from '@/components/FlashMessages.vue'
-import flashMessages from "@/components/FlashMessages.vue";
-import Actionboxes from '@/components/Actionboxes.vue'
-import PhotoCaptureUploader from "@/components/PhotoCaptureUploader.vue";
-import DocQaPanel from '@/components/DocQaPanel.vue'
-
-</script>
-
 <template>
-    <div id="app">
-      <TopNavBar :user="currentUser" class="fixed top-0 z-50" />
+  <AppHeader />
 
-      <MainNavBar />
+  <div class="main-content">
+    <router-view />
+  </div>
 
-      <FlashMessages :messages="flashMessages" />
+  <AppFooter />
 
-      <Actionboxes class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg" />
+  <!-- Password Prompt for unlocking encrypted changes -->
+  <PasswordPrompt
+    v-if="showPasswordPrompt"
+    @unlocked="onUnlocked"
+    @skipped="onSkipped"
+  />
+</template>
 
-      <main class="main-content p-4 space-y-6">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PhotoCaptureUploader />
-          <DocQaPanel />
-        </div>
-      </main>
+<script setup>
+import { ref, onMounted } from 'vue';
+import AppHeader from './components/AppHeader.vue';
+import AppFooter from './components/AppFooter.vue';
+import PasswordPrompt from './components/PasswordPrompt.vue';
+import { useAuthStore } from './stores/auth';
+import { useBankStore } from './stores/bank';
 
-      <Footer />
-    </div>
-  </template>
+const showPasswordPrompt = ref(false);
 
-<style scoped>
+// Check for existing login session on app load
+const authStore = useAuthStore();
+const bankStore = useBankStore();
 
-</style>
+onMounted(() => {
+  authStore.checkAuth();
+
+  // Show password prompt if user is logged in and has encrypted data
+  if (authStore.isLoggedIn && bankStore.hasEncryptedData()) {
+    showPasswordPrompt.value = true;
+  }
+});
+
+function onUnlocked() {
+  showPasswordPrompt.value = false;
+}
+
+function onSkipped() {
+  showPasswordPrompt.value = false;
+  // User chose to skip, they can continue with empty state
+}
+</script>

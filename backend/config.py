@@ -27,6 +27,24 @@ class Config:
     REMEMBER_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_SECURE = (DEPLOYMENT_MODE == 'production')  # Require HTTPS in production
 
+    # Fraud/risk configuration
+    RISK_AMOUNT_STD_CAP = float(os.environ.get('RISK_AMOUNT_STD_CAP', '5.0'))
+    RISK_UNSEEN_CHANNEL_PENALTY = float(os.environ.get('RISK_UNSEEN_CHANNEL_PENALTY', '0.3'))
+    RISK_UNSEEN_LOCATION_PENALTY = float(os.environ.get('RISK_UNSEEN_LOCATION_PENALTY', '0.3'))
+    RISK_OFF_HOURS_PENALTY = float(os.environ.get('RISK_OFF_HOURS_PENALTY', '0.2'))
+    RISK_NEW_RECIPIENT_PENALTY = float(os.environ.get('RISK_NEW_RECIPIENT_PENALTY', '0.1'))
+    RISK_BALANCE_DROP_PENALTY = float(os.environ.get('RISK_BALANCE_DROP_PENALTY', '0.2'))
+    RISK_COMBINED_WEIGHT_LOCAL = float(os.environ.get('RISK_COMBINED_WEIGHT_LOCAL', '0.6'))
+    RISK_COMBINED_WEIGHT_GLOBAL = float(os.environ.get('RISK_COMBINED_WEIGHT_GLOBAL', '0.4'))
+    RISK_ALERT_THRESHOLD = float(os.environ.get('RISK_ALERT_THRESHOLD', '0.7'))
+
+    # Hugging Face model config (override as needed)
+    HF_FRAUD_MODEL = os.environ.get('HF_FRAUD_MODEL', 'mrm8488/bert-tiny-finetuned-fraud-detection')
+    HF_TASK = os.environ.get('HF_TASK', 'text-classification')
+    HF_DEVICE = os.environ.get('HF_DEVICE', 'cpu')
+
 config = {
-    'default': Config
+    'default': Config,
+    'development': Config,
+    'production': Config,
 }

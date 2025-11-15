@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     ner_model_name: str = "boltuix/NeuroBERT-NER"
 
     # Groq
-    groq_api_key: Optional[str] = str(Path(os.getenv("GROQ_API_KEY")))
+    groq_api_key: Optional[str] = os.getenv("GROQ_API_KEY")
     groq_model: str = "llama-3.3-70b-versatile"
 
     # Chunking (character-based; used as fallback)
@@ -47,5 +47,8 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     s = Settings()
+    # Fallback: also honor non-prefixed GROQ_API_KEY if not set via prefix
+    if not s.groq_api_key:
+        s.groq_api_key = os.getenv("GROQ_API_KEY")
     s.data_dir.mkdir(parents=True, exist_ok=True)
     return s

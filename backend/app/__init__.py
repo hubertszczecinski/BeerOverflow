@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -72,8 +72,6 @@ def create_app(config_name=None):
     except Exception as e:
         # Avoid crashing the whole app if API import fails (e.g., missing src deps)
         app.logger.warning(f"API blueprint not registered: {e}")
-
-    app.register_blueprint(main_bp, url_prefix='/api')
 
     return app
 

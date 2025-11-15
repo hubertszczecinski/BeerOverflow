@@ -6,8 +6,12 @@ services:
     container_name: flask-backend
     environment:
       - FACE_API_URL=http://face-recognition:8000
+      - DOC_ANALYSIS_URL=http://doc-analysis:9000
     ports:
       - "5000:5000"  # Map host port 5000 to container port 5000
+    depends_on:
+      - face-recognition
+      - doc-analysis
 
   face-recognition:
     build:
@@ -29,6 +33,15 @@ services:
     #  interval: 30s
     #  timeout: 10s
     #  retries: 3
+
+  doc-analysis:
+    build:
+      context: ./doc_analysis
+    container_name: doc-analysis-service
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./doc_analysis/data:/app/data
 
   # The Vue.js Frontend Service
   frontend:

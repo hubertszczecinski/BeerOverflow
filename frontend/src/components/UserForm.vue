@@ -137,7 +137,7 @@ export default {
     },
     async autosave() {
       try {
-        const response = await fetch("/autosave", {
+        const response = await fetch("/api/autosave", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.formData)
@@ -152,7 +152,7 @@ export default {
     },
     async loadData() {
       try {
-        const response = await fetch("/load");
+        const response = await fetch("/api/load");
         const data = await response.json();
 
         if (data) {
@@ -168,7 +168,7 @@ export default {
     },
     async submitForm() {
       try {
-        const response = await fetch("/delete", {
+        const response = await fetch("/api/submision", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.formData)

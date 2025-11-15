@@ -22,7 +22,44 @@
           </template>
         </ProductCard>
       </div>
+      <div class="col-md-3">
+          <ProductCard
+              icon="fa fa-list"
+              title="Personal Data"
+              centered
+              use-h4
+          >
+            <template #action>
+              <a href="/user-form" class="btn btn-primary btn-sm w-100">Update</a>
+            </template>
+          </ProductCard>
+      </div>
+      <div class="col-md-3">
+        <ProductCard
+            icon="fa-solid fa-magnifying-glass"
+            title="Check Contracts"
+            centered
+            use-h4
+        >
+          <template #action>
+            <a href="/operations" class="btn btn-primary btn-sm w-100">AI overview</a>
+          </template>
+        </ProductCard>
+        </div>
+        <div class="col-md-3">
+          <ProductCard
+              icon="fa-solid fa-bug-slash"
+              title="Slovakia invasion plans"
+              centered
+              use-h4
+          >
+            <template #action>
+              <a href="/offers" class="btn btn-primary btn-sm w-100">Read more</a>
+            </template>
+          </ProductCard>
+        </div>
     </div>
+
 
     <div class="row" v-if="authStore.user">
       <div class="col-md-8">

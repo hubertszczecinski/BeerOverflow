@@ -1,0 +1,13 @@
+{
+  "user_id": "user-123",
+  "amount": 1200.50,
+  "currency": "EUR",
+  "timestamp": "2025-11-15T22:45:00Z",
+  "type": "transfer",
+  "channel": "online",
+  "recipient_id": "iban-DE123456789",
+  "location": "DE/Berlin",
+  "balance_before": 3000.00,
+  "balance_after": 1799.50
+}
+

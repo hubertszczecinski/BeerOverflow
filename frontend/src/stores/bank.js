@@ -304,16 +304,20 @@ export const useBankStore = defineStore('bank', () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                // Handle specific MFA errors
-                if (response.status === 401) {
-                    syncError.value = `Sync failed: ${errorData.message}`;
-                    isMfaRequired.value = true; // Token was rejected, need a new one
-                    await clearMfaToken();
-                    isWorkerRunning = false;
-                    return; // Stop worker
-                }
-                throw new Error(errorData.message || 'Upload failed');
+                let message = 'Upload failed';
+                try {
+                    const ct = response.headers.get('content-type') || '';
+                    const errorData = ct.includes('application/json') ? await response.json() : { message: await response.text() };
+                    if (response.status === 401) {
+                        syncError.value = `Sync failed: ${errorData.message}`;
+                        isMfaRequired.value = true; // Token was rejected, need a new one
+                        await clearMfaToken();
+                        isWorkerRunning = false;
+                        return; // Stop worker
+                    }
+                    message = errorData.message || message;
+                } catch {}
+                throw new Error(message);
             }
 
             // SUCCESS!

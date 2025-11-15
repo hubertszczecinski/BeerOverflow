@@ -5,6 +5,7 @@ import requests
 from flask import request, jsonify
 
 from app.api import bp
+from app.services.risk import evaluate_transaction
 
 DOC_ANALYSIS_URL = os.getenv("DOC_ANALYSIS_URL", "http://doc-analysis:9000")
 
@@ -92,3 +93,18 @@ def index_pdf():
         return jsonify(resp.json())
     except Exception as e:
         return _json_error(f"Doc-analysis error: {e}", 502)
+
+
+@bp.route("/fraud/evaluate", methods=["POST"])
+def fraud_evaluate():
+    data: Dict[str, Any] = request.get_json(silent=True) or {}
+    # Basic shape check
+    required = ["user_id", "amount", "currency", "timestamp", "type", "channel", "recipient_id", "location", "balance_before", "balance_after"]
+    missing = [k for k in required if k not in data]
+    if missing:
+        return _json_error(f"Missing fields: {', '.join(missing)}", 400)
+    try:
+        result = evaluate_transaction(data)
+        return jsonify(result), 200
+    except Exception as e:
+        return _json_error(f"Risk evaluation error: {e}", 500)

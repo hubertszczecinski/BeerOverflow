@@ -5,6 +5,7 @@ import jwt
 from flask import current_app
 from app.main import bp
 from app.models import User
+from app.services.risk import evaluate_transaction
 from app.models import db
 
 @bp.route('/submit-transaction', methods=['POST'])
@@ -39,15 +40,19 @@ def submit_transaction():
     if not tx_data:
         return jsonify({'message': 'No transaction data provided'}), 400
 
-    # --- TODO: Process the transaction ---
-    # E.g., add it to a real processing queue, update balances, etc.
-    # For the hackathon, we just "accept" it.
-    print(f"Processing transaction {tx_data.get('id')} for user {current_user.id}")
-    # ... your real processing logic ...
+    # Evaluate fraud/risk for senior users (or all users if desired)
+    try:
+        tx_payload = dict(tx_data)
+        tx_payload['user_id'] = tx_payload.get('user_id') or current_user.id
+        risk = evaluate_transaction(tx_payload)
+    except Exception as e:
+        risk = {'error': f'risk_evaluation_failed: {e}'}
 
-    # Return success
+    print(f"Processing transaction {tx_data.get('id')} for user {current_user.id}")
+
     return jsonify({
         'message': 'Transaction accepted for processing',
         'transactionId': tx_data.get('id'),
-        'status': 'PROCESSING'
+        'status': 'PROCESSING',
+        'risk': risk
     }), 200

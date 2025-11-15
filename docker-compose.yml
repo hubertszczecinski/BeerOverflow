@@ -29,13 +29,6 @@ services:
     # all traffic should go through frontend->backend only
     volumes:
       - deepface-weights:/root/.deepface/weights
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [ gpu ]
     #healthcheck:
     #  test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
     #  interval: 30s
@@ -95,6 +88,9 @@ networks:
     driver: bridge
 volumes:
   deepface-weights:
+#  backend-data:
+#  letsencrypt-certs:
+#  certbot-www:
   backend-data:
   letsencrypt-certs:
   certbot-www:

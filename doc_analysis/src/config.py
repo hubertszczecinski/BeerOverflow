@@ -47,5 +47,8 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     s = Settings()
+    # Fallback: also honor non-prefixed GROQ_API_KEY if not set via prefix
+    if not s.groq_api_key:
+        s.groq_api_key = os.getenv("GROQ_API_KEY")
     s.data_dir.mkdir(parents=True, exist_ok=True)
     return s

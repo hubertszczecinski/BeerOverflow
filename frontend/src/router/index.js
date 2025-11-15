@@ -15,6 +15,7 @@ import MagazineView from '../views/tabs/MagazineView.vue';
 import OperationsView from "@/views/OperationsView.vue";
 import ReviewChangesView from "@/views/ReviewChangesView.vue";
 import ChangesUploadView from "@/views/ChangesUploadView.vue";
+import OffersView from '@/views/OffersView.vue';
 
 const routes = [
     {
@@ -36,7 +37,7 @@ const routes = [
         path: '/dashboard',
         name: 'Dashboard',
         component: DashboardView,
-        meta: { requiresAuth: true }, // Add meta field for protected routes
+        meta: { requiresAuth: true },  // re-add this once someone with a working backend is available
     },
 
     {
@@ -61,8 +62,15 @@ const routes = [
         path: '/user-form',
         name: 'User Form',
         component: FormView,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true },// re-add this once someone with a working backend is available
     },
+
+    {
+    path: '/offers',
+    name: 'Offers',
+    component: OffersView
+    },
+
     {
         path: '/accounts',
         name: 'Accounts',
@@ -93,6 +101,8 @@ const routes = [
         name: 'Magazine',
         component: MagazineView,
     },
+
+
 
 ];
 

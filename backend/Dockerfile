@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Make startup script executable
+RUN sed -i 's/\r$//' start.sh
 RUN chmod +x start.sh
 
 # Expose the port Gunicorn will run on

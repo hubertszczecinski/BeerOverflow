@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import DashboardView from '../views/DashboardView.vue';
+import FormView from '../views/FormView.vue';
 
 import AccountsView from '../views/tabs/AccountsView.vue';
 import SavingsView from '../views/tabs/SavingsView.vue';
@@ -14,7 +15,7 @@ import MagazineView from '../views/tabs/MagazineView.vue';
 import OperationsView from "@/views/OperationsView.vue";
 import ReviewChangesView from "@/views/ReviewChangesView.vue";
 import ChangesUploadView from "@/views/ChangesUploadView.vue";
-import FormView from "@/views/FormView.vue";
+import OffersView from '@/views/OffersView.vue';
 
 const routes = [
     {
@@ -63,6 +64,15 @@ const routes = [
         component: FormView,
         meta: { requiresAuth: true },
     },
+
+    {
+    path: '/offers',
+    name: 'Offers',
+    component: OffersView,
+    meta: { requiresAuth: true }, // or remove this if you want it public
+    },
+
+
     {
         path: '/accounts',
         name: 'Accounts',

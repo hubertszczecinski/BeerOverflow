@@ -1,4 +1,4 @@
-from flask import Flask, jsonify  # Added jsonify here
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -36,6 +36,7 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
 
     # Enable CORS for API requests
+    # Support both development (localhost) and production (custom domain)
     allowed_origins = [
         'http://localhost:5173',
         'http://localhost:8080',
@@ -61,7 +62,7 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-
+    
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api')
 
@@ -70,13 +71,11 @@ def create_app(config_name=None):
 
     # API blueprint that exposes src.pipeline features under /api
     try:
-        from app.api import bp as api_bp
+        from app.api import bp as api_bp  # type: ignore
         app.register_blueprint(api_bp, url_prefix='/api')
     except Exception as e:
         # Avoid crashing the whole app if API import fails
         app.logger.warning(f"API blueprint not registered: {e}")
 
-    # Remove duplicate registration of main_bp
-    # app.register_blueprint(main_bp, url_prefix='/api')  # This line is duplicate
-
     return app
+

@@ -1,4 +1,5 @@
 services:
+  # The Flask Backend Service
   backend:
     build:
       context: ./backend  # Path to the backend's Dockerfile and code
@@ -9,10 +10,14 @@ services:
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
       - DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-development}
       - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+      - DOC_ANALYSIS_URL=http://doc-analysis:9000
     ports:
       - "5000:5000"  # Map host port 5000 to container port 5000
     volumes:
       - backend-data:/app/data  # Persist SQLite database file
+    depends_on:
+      - face-recognition
+      - doc-analysis
 
   face-recognition:
     build:
@@ -35,6 +40,16 @@ services:
     #  timeout: 10s
     #  retries: 3
 
+  doc-analysis:
+    build:
+      context: ./doc_analysis
+    container_name: doc-analysis-service
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./doc_analysis/data:/app/data
+
+  # The Vue.js Frontend Service
   frontend:
     build:
       context: ./frontend # Path to the frontend's Dockerfile and code
@@ -70,6 +85,3 @@ networks:
     driver: bridge
 volumes:
   deepface-weights:
-  backend-data:
-  letsencrypt-certs:  # Persist Let's Encrypt certificates
-  certbot-www:        # Certbot webroot for certificate validation

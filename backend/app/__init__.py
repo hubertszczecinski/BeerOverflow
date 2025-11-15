@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -9,9 +9,9 @@ import os
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-# Remove Flask-Login default HTML redirects
-login_manager.login_view = None
-login_manager.login_message = None
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Please log in to access this page'
+login_manager.login_message_category = 'info'
 
 
 @login_manager.user_loader
@@ -63,6 +63,16 @@ def create_app(config_name=None):
     app.register_blueprint(auth_bp, url_prefix='/api')
 
     from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
+
+    # API blueprint that exposes src.pipeline features under /api
+    try:
+        from app.api import bp as api_bp  # type: ignore
+        app.register_blueprint(api_bp, url_prefix='/api')
+    except Exception as e:
+        # Avoid crashing the whole app if API import fails (e.g., missing src deps)
+        app.logger.warning(f"API blueprint not registered: {e}")
+
     app.register_blueprint(main_bp, url_prefix='/api')
 
     return app

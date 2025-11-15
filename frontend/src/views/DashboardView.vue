@@ -30,7 +30,7 @@
               use-h4
           >
             <template #action>
-              <a href="/user-form" class="btn btn-primary btn-sm w-100">Transfer Now</a>
+              <a href="/user-form" class="btn btn-primary btn-sm w-100">Update</a>
             </template>
           </ProductCard>
       </div>
@@ -42,7 +42,7 @@
             use-h4
         >
           <template #action>
-            <a href="/operations" class="btn btn-primary btn-sm w-100">Transfer Now</a>
+            <a href="/operations" class="btn btn-primary btn-sm w-100">AI overview</a>
           </template>
         </ProductCard>
         </div>
@@ -54,7 +54,7 @@
               use-h4
           >
             <template #action>
-              <a href="/operations" class="btn btn-primary btn-sm w-100">Transfer Now</a>
+              <a href="/operations" class="btn btn-primary btn-sm w-100">Read more</a>
             </template>
           </ProductCard>
         </div>

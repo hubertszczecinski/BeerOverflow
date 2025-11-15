@@ -10,15 +10,15 @@ face_recognition = FaceRecognition()
 
 @bp.route('/example-data')
 def seed():
-    photo_to_save = face_recognition.save_photo_to_db("images/3-df3eff42.jpg")
+    photo_to_save = face_recognition.save_photo_to_db("images/hubert.jpg")
     user = User(
-        username="testuser",
-        email="test@example.com",
-        first_name="Test",
-        last_name="User",
+        username="chujchujchuj",
+        email="chujchujchuj@chujchujchuj.com",
+        first_name="chujchujchuj",
+        last_name="chujchujchuj",
         photo=photo_to_save
     )
-    user.set_password("test12345")
+    user.set_password("chujchujchuj12345")
 
     db.session.add(user)
     db.session.commit()
@@ -27,35 +27,42 @@ def seed():
 
 @bp.route('/')
 def index():
-    """Home page"""
     return render_template('main/index.html', title='Main site')
 
 @bp.route("/face-check")
+@login_required
 def face_check():
     return render_template("main/test.html")
 
 @bp.route("/verify-face")
+@login_required
 def verify_face():
-    img2 = cv2.imread('images/1-df3eff42.jpg')
-    img1 = cv2.imread('images/3-df3eff42.jpg')
-    users = User.query.all()
-    for user in users:
-        print(user.id, user.username, user.email)
-    user = User.query.get(2)
-    photo = user.get_user_photo(user.id)
-    photo = face_recognition.blob_to_cv2_image(photo)
     frame = face_recognition.generate_img()
-    print('time check')
-    result = face_recognition.verify_face(photo, frame)
-    return jsonify({"result": result})
+    if frame is None:
+        return jsonify({"result": False, "reason": "Could not capture image from camera."})
+
+    print("\n--- Rozpoczęcie weryfikacji twarzy ---")
+    print(f"[*] Sprawdzanie użytkownika: {current_user.username} (ID: {current_user.id})")
+    db_photo_blob = current_user.photo
+    if db_photo_blob:
+        db_photo_image = face_recognition.blob_to_cv2_image(db_photo_blob)
+        result = face_recognition.verify_face(frame, db_photo_image)
+
+        if result.get("verified"):
+            print(f"[+] SUKCES: Twarz zweryfikowana dla {current_user.username} (dystans: {result.get('distance'):.2f})")
+            print("--- Zakończenie weryfikacji ---")
+            return jsonify({"result": True, "user": current_user.username})
+        else:
+            print(f"[-] BŁĄD: Brak dopasowania. Powód: {result.get('reason', 'Twarze nie są zgodne')}")
+
+    print("--- Zakończenie weryfikacji: Nie udało się zweryfikować użytkownika ---")
+    return jsonify({"result": False, "reason": "No matching user found."})
 
 
 @bp.route('/dashboard')
 @login_required
 def dashboard():
-    """User dashboard"""
     return render_template('main/dashboard.html', title='Users dashboard', user=current_user)
-
 @bp.route('/forms')
 def get_forms():
     return render_template('main/forms.html')

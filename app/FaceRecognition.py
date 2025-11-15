@@ -19,33 +19,48 @@ class FaceRecognition:
 
     def verify_face(self, frame, image):
         try:
-            if DeepFace.verify(frame, image)['verified']:
-                return True
-        except ValueError as e:
-            print(e)
-        return False
+            if frame is None:
+                return {"verified": False, "reason": "Obraz z kamery jest pusty (None)."}
+            if image is None:
+                return {"verified": False, "reason": "Obraz z bazy danych jest pusty (None)."}
+
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+
+            result = DeepFace.verify(img1_path=frame_rgb, img2_path=image_rgb, model_name='SFace', enforce_detection=True)
+            return {"verified": result['verified'], "distance": result['distance']}
+        except Exception as e:
+            return {"verified": False, "reason": str(e)}
+
 
     def get_image_from_database(self):
         pass
 
-    def generate_img(self, save_path="photo1.jpg"):
-        camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    def generate_img(self):
+        camera = cv2.VideoCapture(0) 
         if not camera.isOpened():
-            print("Camera is already in use or cannot be opened")
+            print("Camera at index 0 failed, trying index 1...")
+            camera.release()
+            camera = cv2.VideoCapture(1)
+
+        if not camera.isOpened():
+            print("Could not open any camera. Please check camera permissions and connections.")
             camera.release()
             return None
 
         camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-        success, frame = camera.read()
 
-        if not success:
-            print("Failed to capture image")
+        frame = None
+        for _ in range(15):
+            success, frame = camera.read()
+        
+        if not success or frame is None:
+            print("Failed to capture image after multiple attempts.")
             camera.release()
             return None
 
-        cv2.imwrite(save_path, frame)
         camera.release()
-
         return frame

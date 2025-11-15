@@ -28,13 +28,6 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
-    @staticmethod
-    def get_user_photo(user_id):
-        user = User.query.get(user_id)
-        if user is None:
-            return None
-        return user.photo
-
 class Transaction(db.Model):
     __tablename__ = 'transactions'
     
@@ -47,7 +40,6 @@ class Transaction(db.Model):
     
     def __repr__(self):
         return f'<Transaction {self.id} - {self.amount}>'
-
 
 class Forms(db.Model):
     __tablename__ = 'forms'

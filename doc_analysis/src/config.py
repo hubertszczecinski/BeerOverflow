@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     db_url: str = "sqlite:///./banking_qa.db"
 
     # HF models
-    embedding_model_name: str = "BAAI/bge-large-en-v1.5"
+    embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     ner_model_name: str = "boltuix/NeuroBERT-NER"
 
     # Groq

@@ -52,7 +52,7 @@ def index_pdf(pdf_path: str) -> None:
         chunks=db_chunks,
         entities_by_chunk=ents_by_chunk,
     )
-    from vector_store import upsert_products
+    from .vector_store import upsert_products
 
     upsert_products(pdf_path, products.products_to_serializable(product_cards))
 
@@ -184,7 +184,7 @@ def ner_basic_answers_for_product(pdf_path: str) -> str:
         return f"Product {pdf_path} has no associated text chunks to analyze."
 
     chunks = get_chunks_by_ids(chunk_ids)
-    from ner_extraction import answer_simple_questions_for_chunks
+    from .ner_extraction import answer_simple_questions_for_chunks
 
     answers = answer_simple_questions_for_chunks(chunks)
 
@@ -208,7 +208,7 @@ def ner_basic_answers_for_product(pdf_path: str) -> str:
 
 
 def debug_show_chunks_and_scores(question: str, top_k: int | None = None):
-    from embeddings import search_similar
+    from .embeddings import search_similar
 
     top_k = top_k or settings.top_k_default
     results: List[Tuple[DocumentChunk, float]] = search_similar(question, top_k=top_k)

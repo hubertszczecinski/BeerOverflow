@@ -12,7 +12,7 @@ services:
       - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
       - DOC_ANALYSIS_URL=http://doc-analysis:9000
     ports:
-      - "5000:5000"  # Map host port 5000 to container port 5000
+      - "5001:5000"  # Map host port 5000 to container port 5000
     volumes:
       - backend-data:/app/data  # Persist SQLite database file
     #depends_on:

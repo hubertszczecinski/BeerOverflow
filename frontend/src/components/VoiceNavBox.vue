@@ -2,12 +2,19 @@
   <div class="voice-recorder">
     <button
         @click="toggleRecording"
-        :class="['record-btn', { 'recording': isRecording }]"
+        :class="['siri-voice-button', { 'recording': isRecording }]"
     >
-      {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+      <i v-if="!isRecording" class="fa-solid fa-microphone"></i>
+      <i v-else class="fa-solid fa-square"></i>
+      <div v-if="isRecording" class="siri-waves">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div v-if="isRecording" class="recording-time">
+        {{ recordingTime }}s
+      </div>
     </button>
-    <p v-if="isRecording">Recording... {{ recordingTime }}s</p>
-    <p v-if="uploadStatus">{{ uploadStatus }}</p>
   </div>
 </template>
 
@@ -25,7 +32,10 @@ export default {
       audioChunks: [],
       audioUrl: null,
       message: '',
-      isError: false
+      isError: false,
+      recordingTime: 0,
+      recordingTimer: null,
+      stream: null
     };
   },
   async mounted() {
@@ -39,14 +49,23 @@ export default {
     }
   },
   methods: {
+    toggleRecording() {
+      if (this.isRecording) {
+        this.stopRecording();
+      } else {
+        this.startRecording();
+      }
+    },
+
     async startRecording() {
       try {
         this.audioChunks = [];
         this.audioUrl = null;
         this.message = '';
+        this.recordingTime = 0;
 
         // Get user media (audio only)
-        const stream = await navigator.mediaDevices.getUserMedia({
+        this.stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             channelCount: 1,
             sampleRate: 44100,
@@ -56,7 +75,7 @@ export default {
         });
 
         // Create media recorder with WAV format
-        this.mediaRecorder = new MediaRecorder(stream, {
+        this.mediaRecorder = new MediaRecorder(this.stream, {
           mimeType: 'audio/wav'
         });
 
@@ -73,6 +92,12 @@ export default {
         // Start recording
         this.mediaRecorder.start();
         this.isRecording = true;
+
+        // Start timer
+        this.recordingTimer = setInterval(() => {
+          this.recordingTime++;
+        }, 1000);
+
         this.showMessage('Recording started...');
 
       } catch (error) {
@@ -86,8 +111,17 @@ export default {
         this.mediaRecorder.stop();
         this.isRecording = false;
 
+        // Clear timer
+        if (this.recordingTimer) {
+          clearInterval(this.recordingTimer);
+          this.recordingTimer = null;
+        }
+
         // Stop all tracks in the stream
-        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        if (this.stream) {
+          this.stream.getTracks().forEach(track => track.stop());
+          this.stream = null;
+        }
       }
     },
 
@@ -98,7 +132,7 @@ export default {
         // Create blob from recorded chunks
         const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
 
-        // Create URL for preview
+        // Create URL for preview (optional - you can remove if not needed)
         this.audioUrl = URL.createObjectURL(audioBlob);
 
         // Send to server
@@ -128,7 +162,7 @@ export default {
         }
 
         const result = await response.json();
-        this.showMessage('Audio sent successfully! Server response: ' + JSON.stringify(result));
+        this.showMessage('Audio sent successfully!');
 
       } catch (error) {
         console.error('Error sending audio to server:', error);
@@ -154,6 +188,12 @@ export default {
     // Clean up
     if (this.mediaRecorder && this.isRecording) {
       this.mediaRecorder.stop();
+    }
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+    }
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
     }
     if (this.audioUrl) {
       URL.revokeObjectURL(this.audioUrl);
@@ -183,6 +223,8 @@ export default {
   transition: all 0.3s ease;
   animation: float 3s infinite ease-in-out;
   user-select: none;
+  border: none;
+  outline: none;
 }
 
 /* Hover – unosi się */
@@ -195,6 +237,7 @@ export default {
 /* Pulsowanie podczas nagrywania – jak Siri */
 .siri-voice-button.recording {
   animation: siri-pulse 1.5s infinite;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
 }
 
 /* Fale dźwięku – jak Siri */
@@ -227,9 +270,9 @@ export default {
 }
 
 @keyframes siri-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(30, 144, 255, 0.7); }
-  70% { box-shadow: 0 0 0 25px rgba(30, 144, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(30, 144, 255, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+  70% { box-shadow: 0 0 0 25px rgba(255, 71, 87, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
 }
 
 @keyframes float {
@@ -252,6 +295,24 @@ export default {
   pointer-events: none;
 }
 
+/* Message styles */
+p {
+  position: fixed;
+  bottom: 110px;
+  right: 30px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  max-width: 200px;
+  text-align: center;
+}
+
+p.error {
+  background: rgba(255, 71, 87, 0.8);
+}
+
 /* Mobile */
 @media (max-width: 480px) {
   .siri-voice-button {
@@ -260,6 +321,12 @@ export default {
     font-size: 1.5rem;
     bottom: 20px;
     right: 20px;
+  }
+
+  p {
+    bottom: 90px;
+    right: 20px;
+    max-width: 150px;
   }
 }
 </style>

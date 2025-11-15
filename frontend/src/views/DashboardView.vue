@@ -54,7 +54,7 @@
               use-h4
           >
             <template #action>
-              <a href="/operations" class="btn btn-primary btn-sm w-100">Read more</a>
+              <a href="/offers" class="btn btn-primary btn-sm w-100">Read more</a>
             </template>
           </ProductCard>
         </div>

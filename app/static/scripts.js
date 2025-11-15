@@ -28,9 +28,13 @@ function showFaceID(result = null, function_name = null) {
     circle.className = 'faceid-circle';
     tick.className = 'faceid-tick';
     text.className = 'faceid-text';
-    text.textContent = "";
-    window.location.href = function_name;
+    text.textContent = '';
+    if (function_name) {
+      window.location.href = function_name;
+    } else if (result === false) {
+      window.location.href = '/dashboard';
+    }
 
-  }, 4500);
+  }, 2000);
 
 }

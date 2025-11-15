@@ -7,6 +7,9 @@ services:
     environment:
       - FACE_API_URL=http://face-recognition:8000
       - DB_PATH=/app/data/bank.db
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-development}
+      - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
     ports:
       - "5000:5000"  # Map host port 5000 to container port 5000
     volumes:
@@ -38,10 +41,31 @@ services:
     build:
       context: ./frontend # Path to the frontend's Dockerfile and code
     container_name: vue-frontend
+    environment:
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-development}
+      - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-}
     ports:
-      - "8080:80"  # Map host port 8080 to Nginx's port 80
+      - "${HTTP_PORT:-8080}:80"    # HTTP port (8080 for dev, 80 for prod)
+      - "${HTTPS_PORT:-8443}:443"  # HTTPS port (8443 for dev, 443 for prod)
+    volumes:
+      # For Let's Encrypt certificates in production
+      - letsencrypt-certs:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
     depends_on:
       - backend    # Ensures the backend service starts before the frontend
+
+  # Certbot for Let's Encrypt SSL certificates (production only)
+  # To obtain certificates, run: docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot -d commerzbank.valchak.com
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - letsencrypt-certs:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    profiles:
+      - production  # Only start in production
 
 # Define the network (optional, but good practice)
 # This ensures both containers are on the same network.
@@ -51,3 +75,5 @@ networks:
 volumes:
   deepface-weights:
   backend-data:
+  letsencrypt-certs:  # Persist Let's Encrypt certificates
+  certbot-www:        # Certbot webroot for certificate validation

@@ -15,10 +15,17 @@ class Config:
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
     # Session configuration for API usage
+    # In production with HTTPS, use Secure cookies
+    # In development, allow non-secure cookies
+    DEPLOYMENT_MODE = os.environ.get('DEPLOYMENT_MODE', 'development')
+
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'  # Allow cookies from same-site requests
+    SESSION_COOKIE_SECURE = (DEPLOYMENT_MODE == 'production')  # Require HTTPS in production
+
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SAMESITE = 'Lax'
+    REMEMBER_COOKIE_SECURE = (DEPLOYMENT_MODE == 'production')  # Require HTTPS in production
 
 config = {
     'default': Config

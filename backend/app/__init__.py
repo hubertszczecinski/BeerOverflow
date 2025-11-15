@@ -32,9 +32,26 @@ def create_app(config_name=None):
     app.config.from_object(config['default'])
 
     # Enable CORS for API requests
+    # Support both development (localhost) and production (custom domain)
+    allowed_origins = [
+        'http://localhost:5173',  # Vite dev server
+        'http://localhost:8080',  # Docker dev
+        'http://localhost:3000',  # Alternative dev port
+        'http://commerzbank.valchak.com',
+        'https://commerzbank.valchak.com',
+    ]
+
+    # Add custom domain from environment if set
+    custom_domain = os.environ.get('DOMAIN_NAME')
+    if custom_domain and custom_domain != 'localhost':
+        allowed_origins.extend([
+            f'http://{custom_domain}',
+            f'https://{custom_domain}'
+        ])
+
     CORS(app,
          supports_credentials=True,
-         origins=['http://localhost:5173', 'http://localhost:8080', 'http://localhost:3000'],
+         origins=allowed_origins,
          allow_headers=['Content-Type', 'Authorization'],
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 

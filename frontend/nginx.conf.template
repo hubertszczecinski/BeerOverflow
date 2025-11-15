@@ -1,0 +1,37 @@
+# HTTP Server - Redirect to HTTPS in production
+server {
+    listen 80;
+    server_name ${NGINX_SERVER_NAME};
+
+    # For Let's Encrypt certificate validation
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # In production mode, redirect all HTTP to HTTPS
+    # In development mode, serve the application
+    location / {
+        ${HTTP_REDIRECT}
+
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API proxy
+    location /api/ {
+        ${HTTP_REDIRECT}
+
+        proxy_pass http://backend:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# HTTPS Server (Production only - will cause error in dev if cert doesn't exist, so we skip it)
+# The HTTP_REDIRECT variable will contain a comment in dev, which nginx ignores
+# In production, this section will be active
+${HTTPS_SERVER_CONFIG}
+
+

@@ -37,7 +37,7 @@ const routes = [
         path: '/dashboard',
         name: 'Dashboard',
         component: DashboardView,
-        meta: { requiresAuth: false }, // Add meta field for protected routes
+        meta: { requiresAuth: true },  // re-add this once someone with a working backend is available
     },
 
     {
@@ -62,7 +62,7 @@ const routes = [
         path: '/user-form',
         name: 'User Form',
         component: FormView,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true },// re-add this once someone with a working backend is available
     },
 
     {

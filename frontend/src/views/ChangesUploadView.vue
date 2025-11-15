@@ -176,7 +176,10 @@ const progressBarClass = computed(() => {
 function formatTransactionType(type) {
   const types = {
     'TRANSFER': 'Money Transfer',
-    'LOAN_ORDER': 'Loan Request'
+    'LOAN_ORDER': 'Loan Request',
+    'CREATE_ACCOUNT': 'Create Account',
+    'debit': 'Withdrawal',
+    'credit': 'Deposit'
   };
   return types[type] || type;
 }
@@ -186,6 +189,18 @@ function formatTransactionDetails(tx) {
     return `$${tx.amount.toFixed(2)} from ${tx.from} to ${tx.to}`;
   } else if (tx.type === 'LOAN_ORDER') {
     return `$${tx.amount.toFixed(2)} for ${tx.term} months`;
+  } else if (tx.type === 'CREATE_ACCOUNT') {
+    const accountTypes = {
+      'checking': 'Checking',
+      'savings': 'Savings',
+      'business': 'Business',
+      'investment': 'Investment'
+    };
+    const typeName = accountTypes[tx.account_type] || tx.account_type;
+    const amount = tx.initial_balance || 0;
+    return `${typeName} account with ${new Intl.NumberFormat('en-US', { style: 'currency', currency: tx.currency || 'USD' }).format(amount)}`;
+  } else if (tx.type === 'debit' || tx.type === 'credit') {
+    return `${new Intl.NumberFormat('en-US', { style: 'currency', currency: tx.currency || 'USD' }).format(tx.amount)}`;
   }
   return JSON.stringify(tx);
 }

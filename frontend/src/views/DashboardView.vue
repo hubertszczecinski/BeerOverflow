@@ -98,16 +98,7 @@
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Account Balance</h5>
-          </div>
-          <div class="card-body text-center">
-            <h2 class="text-primary mb-3">10,000.00 €</h2>
-            <p class="text-muted">Current Account</p>
-            <a href="#" class="btn btn-outline-primary w-100">View Details</a>
-          </div>
-        </div>
+        <AccountBalances :auto-refresh="true" :show-create-button="true" />
       </div>
     </div>
   </div>
@@ -118,6 +109,7 @@ import { useAuthStore } from '@/stores/auth';
 import ProductCard from '@/components/ProductCard.vue';
 import UserPhoto from "@/components/UserPhoto.vue";
 import FaceVerification from '@/components/FaceVerification.vue';
+import AccountBalances from '@/components/AccountBalances.vue';
 const authStore = useAuthStore();
 
 const formatDate = (dateString) => {

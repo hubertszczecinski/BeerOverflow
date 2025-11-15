@@ -1,5 +1,5 @@
  <script setup>
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted, watch} from 'vue'
 
   const question = ref('')
   const file = ref(null)
@@ -247,8 +247,10 @@
             Match
           </h2>
 
+
           <div class="space-y-4">
             <!-- Cost -->
+            <ve-progress :progress="80" />
             <div class="space-y-1">
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-700">Cost</span>

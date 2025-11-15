@@ -68,10 +68,8 @@ const routes = [
     {
     path: '/offers',
     name: 'Offers',
-    component: OffersView,
-    meta: { requiresAuth: true }, // or remove this if you want it public
+    component: OffersView
     },
-
 
     {
         path: '/accounts',
@@ -103,6 +101,8 @@ const routes = [
         name: 'Magazine',
         component: MagazineView,
     },
+
+
 
 ];
 

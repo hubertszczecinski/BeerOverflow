@@ -1,41 +1,13 @@
 <template>
-  <div class="audio-recorder">
-    <h2>Audio Recorder</h2>
-
-    <div class="controls">
-      <button
-          @click="startRecording"
-          :disabled="isRecording || isLoading"
-          class="btn btn-start"
-      >
-        Start Recording
-      </button>
-
-      <button
-          @click="stopRecording"
-          :disabled="!isRecording || isLoading"
-          class="btn btn-stop"
-      >
-        Stop Recording
-      </button>
-    </div>
-
-    <div v-if="isRecording" class="recording-indicator">
-      ● Recording...
-    </div>
-
-    <div v-if="audioUrl" class="preview">
-      <h3>Preview:</h3>
-      <audio :src="audioUrl" controls class="audio-preview"></audio>
-    </div>
-
-    <div v-if="isLoading" class="loading">
-      Sending audio...
-    </div>
-
-    <div v-if="message" class="message" :class="{ error: isError }">
-      {{ message }}
-    </div>
+  <div class="voice-recorder">
+    <button
+        @click="toggleRecording"
+        :class="['record-btn', { 'recording': isRecording }]"
+    >
+      {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+    </button>
+    <p v-if="isRecording">Recording... {{ recordingTime }}s</p>
+    <p v-if="uploadStatus">{{ uploadStatus }}</p>
   </div>
 </template>
 
@@ -191,94 +163,103 @@ export default {
 </script>
 
 <style scoped>
-.audio-recorder {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.controls {
-  margin: 20px 0;
+/* OKRĄGŁY, BŁĘKITNY, W PRAWYM DOLNYM ROGU – JAK SIRI */
+.siri-voice-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #1e90ff, #00bfff);
+  color: white;
+  border-radius: 50%;
   display: flex;
-  gap: 10px;
-}
-
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
+  box-shadow: 0 8px 25px rgba(30, 144, 255, 0.4);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  animation: float 3s infinite ease-in-out;
+  user-select: none;
 }
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Hover – unosi się */
+.siri-voice-button:hover {
+  transform: translateY(-10px) scale(1.1);
+  box-shadow: 0 15px 35px rgba(30, 144, 255, 0.6);
+  animation: none;
 }
 
-.btn-start {
-  background-color: #4CAF50;
-  color: white;
+/* Pulsowanie podczas nagrywania – jak Siri */
+.siri-voice-button.recording {
+  animation: siri-pulse 1.5s infinite;
 }
 
-.btn-start:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.btn-stop {
-  background-color: #f44336;
-  color: white;
-}
-
-.btn-stop:hover:not(:disabled) {
-  background-color: #da190b;
-}
-
-.recording-indicator {
-  color: #f44336;
-  font-weight: bold;
-  margin: 10px 0;
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-.preview {
-  margin: 20px 0;
-}
-
-.audio-preview {
+/* Fale dźwięku – jak Siri */
+.siri-waves {
+  position: absolute;
   width: 100%;
-  margin-top: 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
-.loading {
-  color: #2196F3;
-  font-style: italic;
-  margin: 10px 0;
+.siri-waves span {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  animation: wave 1.6s infinite ease-out;
 }
 
-.message {
-  padding: 10px;
-  border-radius: 5px;
-  margin: 10px 0;
+.siri-waves span:nth-child(1) { animation-delay: 0s; }
+.siri-waves span:nth-child(2) { animation-delay: 0.4s; }
+.siri-waves span:nth-child(3) { animation-delay: 0.8s; }
+
+@keyframes wave {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(6); opacity: 0; }
 }
 
-.message:not(.error) {
-  background-color: #dff0d8;
-  color: #3c763d;
-  border: 1px solid #d6e9c6;
+@keyframes siri-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(30, 144, 255, 0.7); }
+  70% { box-shadow: 0 0 0 25px rgba(30, 144, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(30, 144, 255, 0); }
 }
 
-.message.error {
-  background-color: #f2dede;
-  color: #a94442;
-  border: 1px solid #ebccd1;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Czas nagrywania – nad przyciskiem */
+.recording-time {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .siri-voice-button {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    bottom: 20px;
+    right: 20px;
+  }
 }
 </style>

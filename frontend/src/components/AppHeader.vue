@@ -2,13 +2,9 @@
   <nav class="navbar navbar-expand-lg top-navbar" role="navigation" aria-label="Utility">
     <div class="container">
       <router-link class="navbar-brand" to="/">
-        <strong>Commerzbank</strong>
+        <strong>BeerBank</strong>
       </router-link>
       <div class="search-login ms-auto">
-        <a href="#" class="search-icon" aria-label="Search">
-          <i class="fas fa-search" aria-hidden="true"></i>
-        </a>
-
         <template v-if="authStore.isLoggedIn">
           <router-link to="/dashboard" class="login-btn">
             <i class="fas fa-user-circle" aria-hidden="true"></i> My Account

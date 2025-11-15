@@ -56,3 +56,9 @@ def submit_transaction():
         'status': 'PROCESSING',
         'risk': risk
     }), 200
+
+
+@bp.route('/api/submit-transaction', methods=['POST'])
+@login_required
+def submit_transaction_api_alias():
+    return submit_transaction()

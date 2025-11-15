@@ -223,3 +223,24 @@ def verify_face():
 
     except requests.exceptions.RequestException as e:
         return jsonify({'message': 'Could not reach face verification service', 'error': str(e)}), 502
+
+
+@bp.route('/users', methods=['GET'])
+@login_required
+def list_users():
+    """List users with minimal fields to verify senior flag.
+
+    Auth required to avoid exposing user list publicly.
+    Returns: { items: [ {id, username, email, is_senior} ] }
+    """
+    users = User.query.order_by(User.id.asc()).all()
+    items = [
+        {
+            'id': u.id,
+            'username': u.username,
+            'email': u.email,
+            'is_senior': bool(u.is_senior),
+        }
+        for u in users
+    ]
+    return jsonify({'items': items, 'count': len(items)})

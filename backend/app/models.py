@@ -21,8 +21,7 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime)
     photo= db.Column(db.LargeBinary)
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic')
-    # Optional flag to mark a user as senior for specialized policies
-    is_senior = db.Column(db.Boolean, default=False)
+    is_senior = db.Column(db.Boolean, default=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

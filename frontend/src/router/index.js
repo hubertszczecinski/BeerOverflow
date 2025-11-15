@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import DashboardView from '../views/DashboardView.vue';
+import FormView from '../views/FormView.vue';
 
 import AccountsView from '../views/tabs/AccountsView.vue';
 import SavingsView from '../views/tabs/SavingsView.vue';

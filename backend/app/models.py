@@ -16,10 +16,9 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
-    
-    
+    photo= db.Column(db.LargeBinary)
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic')
-    
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
     
@@ -29,6 +28,12 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+    @staticmethod
+    def get_user_photo(user_id):
+        user = User.query.get(user_id)
+        if user is None:
+            return None
+        return user.photo
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'

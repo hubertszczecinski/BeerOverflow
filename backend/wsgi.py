@@ -1,8 +1,7 @@
 from app import create_app
+import os
 
-app = create_app()
-
-if __name__ == "__main__":
-    # For debugging locally; in Docker use gunicorn per Dockerfile
-    app.run(host="0.0.0.0", port=5000, debug=True)
-
+# Create the 'app' object that Gunicorn will use.
+# It's good practice to default to 'production' here,
+# as this file is specifically for the Gunicorn server.
+app = create_app(os.getenv('FLASK_ENV', 'production'))

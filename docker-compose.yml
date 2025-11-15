@@ -1,20 +1,34 @@
-# This file orchestrates the building and running of both services.
-version: '3.8'
-
 services:
   # The Flask Backend Service
   backend:
     build:
       context: ./backend  # Path to the backend's Dockerfile and code
     container_name: flask-backend
+    environment:
+      - FACE_API_URL=http://face-recognition:8000
     ports:
       - "5000:5000"  # Map host port 5000 to container port 5000
-    # Add a volume for development (optional)
-    # This mounts your local ./backend code into the container.
-    # Changes you make locally will be reflected in the container.
-    # Note: Gunicorn might need a reload flag to see changes.
-    # volumes:
-    #   - ./backend:/app
+
+  face-recognition:
+    build:
+      context: ./face_recognition
+    container_name: face-recognition-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - deepface-weights:/root/.deepface/weights
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    #healthcheck:
+    #  test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
+    #  interval: 30s
+    #  timeout: 10s
+    #  retries: 3
 
   # The Vue.js Frontend Service
   frontend:
@@ -33,3 +47,5 @@ services:
 networks:
   default:
     driver: bridge
+volumes:
+  deepface-weights:

@@ -14,6 +14,7 @@ import MagazineView from '../views/tabs/MagazineView.vue';
 import OperationsView from "@/views/OperationsView.vue";
 import ReviewChangesView from "@/views/ReviewChangesView.vue";
 import ChangesUploadView from "@/views/ChangesUploadView.vue";
+import OffersView from '@/views/OffersView.vue';
 
 const routes = [
     {
@@ -55,6 +56,13 @@ const routes = [
         name: 'Changes Upload Progress',
         component: ChangesUploadView,
         meta: { requiresAuth: true }, // Add meta field for protected routes
+    },
+
+    {
+    path: '/offers',
+    name: 'Offers',
+    component: OffersView,
+    meta: { requiresAuth: true }, // or remove this if you want it public
     },
 
 

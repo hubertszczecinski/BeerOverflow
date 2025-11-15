@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import router from '@/router';
+import { useBankStore } from './bank';
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
@@ -27,6 +28,15 @@ export const useAuthStore = defineStore('auth', {
 
                 // Persist login (e.g., in localStorage)
                 localStorage.setItem('user', JSON.stringify(data.user));
+
+                // Initialize bank store with the password
+                const bankStore = useBankStore();
+                try {
+                    await bankStore.initializeSession(credentials.password);
+                } catch (err) {
+                    console.error('Failed to initialize bank store:', err);
+                    // Don't fail login if bank store initialization fails
+                }
 
                 router.push('/dashboard');
             } catch (error) {

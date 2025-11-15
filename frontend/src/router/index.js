@@ -11,6 +11,9 @@ import CreditView from '../views/tabs/CreditView.vue';
 import SecuritiesView from '../views/tabs/SecuritiesView.vue';
 import InsuranceView from '../views/tabs/InsuranceView.vue';
 import MagazineView from '../views/tabs/MagazineView.vue';
+import OperationsView from "@/views/OperationsView.vue";
+import ReviewChangesView from "@/views/ReviewChangesView.vue";
+import ChangesUploadView from "@/views/ChangesUploadView.vue";
 
 const routes = [
     {
@@ -34,6 +37,26 @@ const routes = [
         component: DashboardView,
         meta: { requiresAuth: true }, // Add meta field for protected routes
     },
+
+    {
+        path: '/operations',
+        name: 'Operations',
+        component: OperationsView,
+        meta: { requiresAuth: true }, // Add meta field for protected routes
+    },
+    {
+        path: '/review',
+        name: 'Review Changes',
+        component: ReviewChangesView,
+        meta: { requiresAuth: true }, // Add meta field for protected routes
+    },
+    {
+        path: '/changes-upload',
+        name: 'Changes Upload Progress',
+        component: ChangesUploadView,
+        meta: { requiresAuth: true }, // Add meta field for protected routes
+    },
+
 
     {
         path: '/accounts',

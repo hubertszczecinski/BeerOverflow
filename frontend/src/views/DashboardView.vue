@@ -18,7 +18,7 @@
           use-h4
         >
           <template #action>
-            <a href="#" class="btn btn-primary btn-sm w-100">Transfer Now</a>
+            <a href="/operations" class="btn btn-primary btn-sm w-100">Transfer Now</a>
           </template>
         </ProductCard>
       </div>

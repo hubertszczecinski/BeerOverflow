@@ -10,6 +10,13 @@ from id_matching import Matcher
 
 #serve run whisper-endpoint:depl
 
+serve.start(
+    http_options={
+        "host": "0.0.0.0",   # <-- bind to all interfaces
+        "port": 8000
+    }
+)
+
 
 @serve.deployment(ray_actor_options={"num_cpus": 1})
 class ModelDeployment:
@@ -27,10 +34,13 @@ class ModelDeployment:
         print(len(segments))
         if len(segments) == 0:
             return ""
-        return self.matcher.match(out.text)
+        return {"message": self.matcher.match(out.text), "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "*"
+            }}
 
 
-ray.init()
 depl = ModelDeployment.bind()
 
 #serve.run(depl, route_prefix="/")

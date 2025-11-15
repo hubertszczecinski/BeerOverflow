@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify  # Added jsonify here
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -28,15 +28,18 @@ def unauthorized():
 
 def create_app(config_name=None):
     app = Flask(__name__)
-    
-    app.config.from_object(config['default'])
+
+    # Fix: Handle config_name properly
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'default')
+
+    app.config.from_object(config[config_name])
 
     # Enable CORS for API requests
-    # Support both development (localhost) and production (custom domain)
     allowed_origins = [
-        'http://localhost:5173',  # Vite dev server
-        'http://localhost:8080',  # Docker dev
-        'http://localhost:3000',  # Alternative dev port
+        'http://localhost:5173',
+        'http://localhost:8080',
+        'http://localhost:3000',
         'http://commerzbank.valchak.com',
         'https://commerzbank.valchak.com',
     ]
@@ -58,7 +61,7 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    
+
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api')
 
@@ -67,13 +70,13 @@ def create_app(config_name=None):
 
     # API blueprint that exposes src.pipeline features under /api
     try:
-        from app.api import bp as api_bp  # type: ignore
+        from app.api import bp as api_bp
         app.register_blueprint(api_bp, url_prefix='/api')
     except Exception as e:
-        # Avoid crashing the whole app if API import fails (e.g., missing src deps)
+        # Avoid crashing the whole app if API import fails
         app.logger.warning(f"API blueprint not registered: {e}")
 
-    app.register_blueprint(main_bp, url_prefix='/api')
+    # Remove duplicate registration of main_bp
+    # app.register_blueprint(main_bp, url_prefix='/api')  # This line is duplicate
 
     return app
-

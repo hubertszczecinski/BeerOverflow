@@ -56,8 +56,12 @@ const routes = [
         component: ChangesUploadView,
         meta: { requiresAuth: true }, // Add meta field for protected routes
     },
-
-
+    {
+        path: '/user-form',
+        name: 'User Form',
+        component: FormView,
+        meta: { requiresAuth: true },
+    },
     {
         path: '/accounts',
         name: 'Accounts',
@@ -88,6 +92,7 @@ const routes = [
         name: 'Magazine',
         component: MagazineView,
     },
+
 ];
 
 const router = createRouter({

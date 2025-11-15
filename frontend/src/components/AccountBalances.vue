@@ -76,6 +76,12 @@
                 <div class="balance-amount" :class="{ 'text-primary': account.balance >= 0, 'text-danger': account.balance < 0 }">
                   {{ formatCurrency(account.balance, account.currency) }}
                 </div>
+                <BalanceDifference
+                  v-if="showProjected && hasChanges"
+                  :difference="getAccountDifference(account.id)"
+                  :currency="account.currency"
+                  class="mt-1"
+                />
                 <small class="text-muted">{{ account.currency }}</small>
               </div>
             </div>
@@ -120,6 +126,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useBankStore } from '@/stores/bank';
+import BalanceDifference from './BalanceDifference.vue';
 
 const props = defineProps({
   showCreateButton: {
@@ -149,6 +156,22 @@ const displayTotalBalance = computed(() => {
 const hasChanges = computed(() => {
   return bankStore.stagedTransactions.length > 0;
 });
+
+// Calculate the balance difference for each account
+function getAccountDifference(accountId) {
+  if (!showProjected.value || !hasChanges.value) {
+    return 0;
+  }
+
+  const currentAccount = bankStore.accounts.find(acc => acc.id === accountId);
+  const projectedAccount = bankStore.projectedAccounts.find(acc => acc.id === accountId);
+
+  if (!currentAccount || !projectedAccount) {
+    return 0;
+  }
+
+  return projectedAccount.balance - currentAccount.balance;
+}
 
 function toggleView() {
   showProjected.value = !showProjected.value;

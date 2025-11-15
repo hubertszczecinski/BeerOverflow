@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg top-navbar" role="navigation" aria-label="Utility">
     <div class="container">
       <router-link class="navbar-brand" to="/">
-        <strong>BeerBank</strong>
+        <strong><i class="fas fa-beer"></i> BeerBank</strong>
       </router-link>
       <div class="search-login ms-auto">
         <template v-if="authStore.isLoggedIn">

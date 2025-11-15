@@ -1,5 +1,9 @@
 <template>
+  <div class="background-div">
   <div class="hero-banner">
+    <!-- Background div -->
+
+
     <div class="container">
       <h1 ref="typewriterHeader" class="typewriter-header">The Bank by Your Side</h1>
       <p class="subtitle">Modern banking solutions for you</p>
@@ -20,10 +24,11 @@
       </template>
     </div>
 
-    <VoiceNavBox />
-  </div>
 
-</template> 
+  </div>
+  </div>
+  <VoiceNavBox />
+</template>
 
 <script setup>
 import { useAuthStore } from '@/stores/auth';
@@ -84,22 +89,22 @@ function startTypewriterEffect() {
 
 // Obserwuj zmianę trasy
 watch(
-  () => route.path,
-  (newPath) => {
-    if (newPath === '/' || newPath === '/home') {
-      // Małe opóźnienie, by DOM się ustabilizował
-      setTimeout(startTypewriterEffect, 100);
-    } else {
-      // Czyść animację przy wyjściu
-      const header = typewriterHeader.value;
-      if (header) {
-        header.innerHTML = text; // przywróć oryginalny tekst
-        header.classList.remove('typing-complete');
-        document.querySelector('.subtitle')?.classList.remove('show');
+    () => route.path,
+    (newPath) => {
+      if (newPath === '/' || newPath === '/home') {
+        // Małe opóźnienie, by DOM się ustabilizował
+        setTimeout(startTypewriterEffect, 100);
+      } else {
+        // Czyść animację przy wyjściu
+        const header = typewriterHeader.value;
+        if (header) {
+          header.innerHTML = text; // przywróć oryginalny tekst
+          header.classList.remove('typing-complete');
+          document.querySelector('.subtitle')?.classList.remove('show');
+        }
       }
-    }
-  },
-  { immediate: true }
+    },
+    { immediate: true }
 );
 
 onBeforeUnmount(() => {
@@ -108,6 +113,24 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.hero-banner {
+  position: relative;
+  min-height: 100vh; /* Ensure it stretches at least to viewport height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.background-div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: yellow;
+  z-index: -50;
+}
+
 .typewriter-header {
   font-size: 4.5rem;
   font-weight: 700;

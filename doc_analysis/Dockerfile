@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src ./src
 COPY data ./data
 
+RUN #sed -i 's/\r$//' start.sh
+RUN #chmod +x start.sh
+
 EXPOSE 9000
 
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "9000"]

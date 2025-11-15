@@ -15,6 +15,7 @@ import MagazineView from '../views/tabs/MagazineView.vue';
 import OperationsView from "@/views/OperationsView.vue";
 import ReviewChangesView from "@/views/ReviewChangesView.vue";
 import ChangesUploadView from "@/views/ChangesUploadView.vue";
+import OffersView from '@/views/OffersView.vue';
 
 const routes = [
     {
@@ -63,6 +64,15 @@ const routes = [
         component: FormView,
         meta: { requiresAuth: true },
     },
+
+    {
+    path: '/offers',
+    name: 'Offers',
+    component: OffersView,
+    meta: { requiresAuth: true }, // or remove this if you want it public
+    },
+
+
     {
         path: '/accounts',
         name: 'Accounts',
@@ -93,7 +103,6 @@ const routes = [
         name: 'Magazine',
         component: MagazineView,
     },
-
 ];
 
 const router = createRouter({

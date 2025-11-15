@@ -1,5 +1,7 @@
 from flask import jsonify, request, send_file
 import io
+import os
+import requests
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.auth import bp
@@ -153,3 +155,46 @@ def get_my_photo():
         as_attachment=False,
         download_name=f'{current_user.username}_photo.jpg'
     )
+
+
+@bp.route('/verify-face', methods=['POST'])
+@login_required
+def verify_face():
+    """
+    Use the stored DB photo of the authenticated user and the uploaded image
+    to verify the face via the external FACE_API_URL service.
+    Expects multipart/form-data with a single file field named 'image'.
+    """
+    if not current_user.photo:
+        return jsonify({'message': 'Stored user photo not found'}), 404
+
+    # Validate uploaded image
+    if not request.content_type or 'multipart/form-data' not in request.content_type:
+        return jsonify({'message': 'Expected multipart/form-data upload'}), 400
+
+    uploaded_file = request.files.get('image')
+    if not uploaded_file:
+        return jsonify({'message': "Field 'image' is required"}), 400
+
+    face_api_base = os.environ.get('FACE_API_URL', 'http://face-recognition:8000').rstrip('/')
+    verify_url = f"{face_api_base}/verify"
+
+    # Prepare files for the verification service
+    files = {
+        'image1': (f"{current_user.username}_db.jpg", io.BytesIO(current_user.photo), 'image/jpeg'),
+        'image2': (uploaded_file.filename or 'captured.jpg', uploaded_file.stream, uploaded_file.mimetype or 'image/jpeg')
+    }
+
+    try:
+        resp = requests.post(verify_url, files=files, timeout=30)
+        if resp.status_code != 200:
+            return jsonify({'message': 'Verification service error', 'detail': resp.text}), resp.status_code
+        data = resp.json()
+        return jsonify({
+            'verified': data.get('verified', False),
+            'distance': data.get('distance'),
+            'threshold': data.get('threshold'),
+            'reason': data.get('reason')
+        }), 200
+    except requests.exceptions.RequestException as e:
+        return jsonify({'message': 'Could not reach face verification service', 'error': str(e)}), 502

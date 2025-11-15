@@ -52,6 +52,11 @@
               </tbody>
             </table>
             <UserPhoto />
+
+            <!-- Face Verification component for testing -->
+            <div class="mt-4">
+              <FaceVerification />
+            </div>
           </div>
         </div>
       </div>
@@ -75,6 +80,7 @@
 import { useAuthStore } from '@/stores/auth';
 import ProductCard from '@/components/ProductCard.vue';
 import UserPhoto from "@/components/UserPhoto.vue";
+import FaceVerification from '@/components/FaceVerification.vue';
 const authStore = useAuthStore();
 
 const formatDate = (dateString) => {

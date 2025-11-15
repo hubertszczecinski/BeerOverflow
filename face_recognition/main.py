@@ -22,7 +22,9 @@ async def verify_faces(
         image1: UploadFile = File(...),
         image2: UploadFile = File(...)
 ) -> JSONResponse:
-    """Compare two face images and return whether they match"""
+    """Compare two face images and return whether they match
+       Gracefully handles cases where one or both faces are not detectable.
+    """
 
     # Create temporary files for DeepFace
     with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp1, \
@@ -38,13 +40,30 @@ async def verify_faces(
             tmp1.flush()
             tmp2.flush()
 
-            # Verify faces using DeepFace
-            result = DeepFace.verify(tmp1.name, tmp2.name)
+            try:
+                # Verify faces using DeepFace
+                # Use enforce_detection=False so DeepFace returns a dict with verified False
+                # instead of throwing an exception when a face is not found.
+                result = DeepFace.verify(tmp1.name, tmp2.name, enforce_detection=False)
+            except Exception as inner_e:
+                # Fallback: if DeepFace still raised, respond with a graceful failure
+                return JSONResponse(content={
+                    "verified": False,
+                    "distance": None,
+                    "threshold": None,
+                    "reason": f"deepface_error: {str(inner_e)}"
+                })
+
+            # Additional sanity checks: if distance missing and verified False, likely face not detected.
+            reason = None
+            if not result.get("verified", False) and result.get("distance") is None:
+                reason = "face_not_detected"
 
             return JSONResponse(content={
-                "verified": result["verified"],
+                "verified": result.get("verified", False),
                 "distance": result.get("distance"),
-                "threshold": result.get("threshold")
+                "threshold": result.get("threshold"),
+                "reason": reason
             })
 
         except Exception as e:

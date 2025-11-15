@@ -1,13 +1,18 @@
 <template>
-  <div class="voice-recorder">
-    <button
-        @click="toggleRecording"
-        :class="['record-btn', { 'recording': isRecording }]"
-    >
-      {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
-    </button>
-    <p v-if="isRecording">Recording... {{ recordingTime }}s</p>
-    <p v-if="uploadStatus">{{ uploadStatus }}</p>
+  <div
+    class="siri-voice-button"
+    :class="{ 'recording': isRecording }"
+    @click="toggleRecording"
+  >
+    <i class="fas fa-microphone"></i>
+    <div class="siri-waves" v-if="isRecording">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="recording-time" v-if="isRecording">
+      {{ recordingTime }}s
+    </div>
   </div>
 </template>
 
@@ -193,21 +198,103 @@ x``
 </script>
 
 <style scoped>
-.record-btn {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  background-color: #4CAF50;
+/* OKRĄGŁY, BŁĘKITNY, W PRAWYM DOLNYM ROGU – JAK SIRI */
+.siri-voice-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #1e90ff, #00bfff);
   color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
   cursor: pointer;
+  box-shadow: 0 8px 25px rgba(30, 144, 255, 0.4);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  animation: float 3s infinite ease-in-out;
+  user-select: none;
 }
 
-.record-btn.recording {
-  background-color: #f44336;
+/* Hover – unosi się */
+.siri-voice-button:hover {
+  transform: translateY(-10px) scale(1.1);
+  box-shadow: 0 15px 35px rgba(30, 144, 255, 0.6);
+  animation: none;
 }
 
-.record-btn:hover {
-  opacity: 0.8;
+/* Pulsowanie podczas nagrywania – jak Siri */
+.siri-voice-button.recording {
+  animation: siri-pulse 1.5s infinite;
+}
+
+/* Fale dźwięku – jak Siri */
+.siri-waves {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.siri-waves span {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  animation: wave 1.6s infinite ease-out;
+}
+
+.siri-waves span:nth-child(1) { animation-delay: 0s; }
+.siri-waves span:nth-child(2) { animation-delay: 0.4s; }
+.siri-waves span:nth-child(3) { animation-delay: 0.8s; }
+
+@keyframes wave {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(6); opacity: 0; }
+}
+
+@keyframes siri-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(30, 144, 255, 0.7); }
+  70% { box-shadow: 0 0 0 25px rgba(30, 144, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(30, 144, 255, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Czas nagrywania – nad przyciskiem */
+.recording-time {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .siri-voice-button {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    bottom: 20px;
+    right: 20px;
+  }
 }
 </style>

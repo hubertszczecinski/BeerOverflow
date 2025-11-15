@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(credentials),
+                    credentials: 'include', // Important for session cookies
                 });
 
                 if (!response.ok) {
@@ -40,6 +41,7 @@ export const useAuthStore = defineStore('auth', {
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     body: formData, // FormData is sent directly, no Content-Type header
+                    credentials: 'include', // Important for session cookies
                 });
 
                 if (!response.ok) {
@@ -57,10 +59,20 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        logout() {
-            this.user = null;
-            localStorage.removeItem('user');
-            router.push('/login');
+        async logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    credentials: 'include',
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            } finally {
+                // Clear local state regardless of API response
+                this.user = null;
+                localStorage.removeItem('user');
+                router.push('/login');
+            }
         },
 
         // Call this on app load to check for persisted session

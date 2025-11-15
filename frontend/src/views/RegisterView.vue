@@ -135,7 +135,7 @@ async function handleRegister() {
   formData.append('password', form.password);
 
   // Append the image blob
-  formData.append('image', capturedImageBlob.value, 'capture.jpg');
+  formData.append('photo', capturedImageBlob.value, 'capture.jpg');
 
   // Submit to the auth store
   await authStore.register(formData);

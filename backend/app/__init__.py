@@ -40,6 +40,7 @@ def create_app(config_name=None):
         'http://localhost:5173',
         'http://localhost:8080',
         'http://localhost:3000',
+        'http://localhost:7000',
         'http://commerzbank.valchak.com',
         'https://commerzbank.valchak.com',
     ]

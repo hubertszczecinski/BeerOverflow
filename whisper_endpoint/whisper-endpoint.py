@@ -27,6 +27,7 @@ class ModelDeployment:
 
     async def __call__(self, request: Request):
         request = await request.body()
+        print(request)
         data = np.frombuffer(request, np.float32)
         #separated = self.separator.separate_batch(torch.from_numpy(data).unsqueeze(0)) separated[0, :, 0]
         out = self.model.transcribe(audio=data, language="en", verbose=True, vad=True, only_voice_freq=True)
@@ -34,7 +35,11 @@ class ModelDeployment:
         print(len(segments))
         if len(segments) == 0:
             return ""
-        return self.matcher.match(out.text)
+        return {"message": self.matcher.match(out.text), "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "*"
+            }}
 
 
 depl = ModelDeployment.bind()

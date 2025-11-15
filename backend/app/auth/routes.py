@@ -6,10 +6,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.auth import bp
 from app.models import User
-from app.FaceRecognitionHandler import FaceRecognitionHandler
-from datetime import datetime
-
-face_recognition_handler = FaceRecognitionHandler()
+from datetime import datetime, timedelta
 
 
 @bp.route('/login', methods=['POST'])

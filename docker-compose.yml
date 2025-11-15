@@ -25,6 +25,8 @@ services:
     container_name: face-recognition-service
     ports:
       - "8000:8000"
+    # TODO: hide all these service ports for production deployment
+    # all traffic should go through frontend->backend only
     volumes:
       - deepface-weights:/root/.deepface/weights
     deploy:
@@ -51,6 +53,12 @@ services:
     volumes:
       - ./doc_analysis/data:/app/data
 
+  voice-assist:
+    build:
+      context: ./whisper_endpoint
+    container_name: voice-assist-service
+    ports:
+        - "7000:7000"
   # The Vue.js Frontend Service
   frontend:
     build:

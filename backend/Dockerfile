@@ -13,9 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the backend application code
 COPY . .
 
+# Make startup script executable
+RUN chmod +x start.sh
+
 # Expose the port Gunicorn will run on
 EXPOSE 5000
 
-# Command to run the application using Gunicorn
-# 'wsgi:app' refers to the 'app' object in the 'wsgi.py' file
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
+# Command to run migrations then start gunicorn
+CMD ["/app/start.sh"]

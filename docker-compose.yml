@@ -6,8 +6,11 @@ services:
     container_name: flask-backend
     environment:
       - FACE_API_URL=http://face-recognition:8000
+      - DB_PATH=/app/data/bank.db
     ports:
       - "5000:5000"  # Map host port 5000 to container port 5000
+    volumes:
+      - backend-data:/app/data  # Persist SQLite database file
 
   face-recognition:
     build:
@@ -47,3 +50,4 @@ networks:
     driver: bridge
 volumes:
   deepface-weights:
+  backend-data:

@@ -167,8 +167,8 @@ onMounted(() => {
 
 <template>
   <div class="p-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- LEFT: Product selector + description + PDF ask -->
+    <div class="">
+      <!-- top: Product selector + description + PDF ask -->
       <div class="border rounded bg-white p-4 space-y-4">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">
@@ -241,7 +241,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- RIGHT: Match panel -->
+      <!-- bot: Match panel -->
       <div class="border rounded bg-white p-4 space-y-4">
         <h2 class="text-lg font-semibold text-gray-900">
           Match
@@ -250,12 +250,12 @@ onMounted(() => {
         <div v-if="loadingMatch" class="text-xs text-gray-500">
           Calculating match...
         </div>
-
-        <div v-else class="space-y-6">
+        <div v-else class="">
           <!-- Circular Progress Bars -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Cost -->
-            <div class="flex flex-col items-center">
+            <div class="flex">
+              <div class="mt-2 text-sm font-medium text-gray-700">Cost</div>
               <ve-progress
                   :progress="selectedProduct ? match.cost : 0"
                   :size="120"
@@ -274,11 +274,13 @@ onMounted(() => {
                   {{ selectedProduct ? formatPercent(match.cost) : '--' }}%
                 </span>
               </ve-progress>
-              <div class="mt-2 text-sm font-medium text-gray-700">Cost</div>
+
             </div>
 
+
             <!-- Length -->
-            <div class="flex flex-col items-center">
+            <div class="flex">
+              <div class="mt-2 text-sm font-medium text-gray-700">Length</div>
               <ve-progress
                   :progress="selectedProduct ? match.length : 0"
                   :size="120"
@@ -297,11 +299,12 @@ onMounted(() => {
                   {{ selectedProduct ? formatPercent(match.length) : '--' }}%
                 </span>
               </ve-progress>
-              <div class="mt-2 text-sm font-medium text-gray-700">Length</div>
+
             </div>
 
             <!-- Comfort -->
-            <div class="flex flex-col items-center">
+            <div class="flex">
+              <div class="mt-2 text-sm font-medium text-gray-700">Comfort</div>
               <ve-progress
                   :progress="selectedProduct ? match.comfort : 0"
                   :size="120"
@@ -320,11 +323,14 @@ onMounted(() => {
                   {{ selectedProduct ? formatPercent(match.comfort) : '--' }}%
                 </span>
               </ve-progress>
-              <div class="mt-2 text-sm font-medium text-gray-700">Comfort</div>
+
             </div>
+
+
           </div>
 
           <!-- Overall Match Gauge -->
+          <div class="mt-2 text-sm font-medium text-gray-700">Overall:</div>
           <div class="flex flex-col items-center justify-center mt-4">
             <div class="relative w-40 h-20 overflow-hidden">
               <div

@@ -136,7 +136,7 @@ function handleSkip() {
 .password-prompt-header {
   padding: 1.5rem;
   border-bottom: 1px solid #dee2e6;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffb218 0%, #da7400 100%);
   color: white;
   border-radius: 0.5rem 0.5rem 0 0;
 }
@@ -151,12 +151,12 @@ function handleSkip() {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffb218 0%, #da7400 100%);
   border: none;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+  background: linear-gradient(135deg, #ffb218 0%, #da7400 100%);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 

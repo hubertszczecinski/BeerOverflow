@@ -8,14 +8,22 @@ import {
 
 export const useBankStore = defineStore('bank', () => {
 
-    const baseState = ref({
-        accounts: [
-            { id: 'a1', name: 'Checking', balance: 1250.77 },
-            { id: 'a2', name: 'Savings', balance: 5800.00 },
-        ],
-        loans: [],
-        lastUpdated: null,
-    });
+    // Simple FX rates to USD (rough, hard-coded approximations)
+    // 1 unit of CURRENCY = rate USD
+    const FX_TO_USD = {
+        USD: 1.0,
+        EUR: 1.08,
+        GBP: 1.25,
+        JPY: 0.0067,
+        CHF: 1.10,
+        PLN: 0.25,
+        CZK: 0.044
+    };
+
+    // Backend-driven state
+    const accounts = ref([]);
+    const transactions = ref([]);
+    const lastUpdated = ref(null);
 
     const stagedTransactions = ref([]);
     const committedTransactions = ref([]);
@@ -34,29 +42,55 @@ export const useBankStore = defineStore('bank', () => {
 
     // --- GETTERS (Computed Properties) ---
 
-    const projectedState = computed(() => {
-        const projected = JSON.parse(JSON.stringify(baseState.value));
+    const projectedAccounts = computed(() => {
+        // Clone accounts and apply staged transactions
+        const projected = JSON.parse(JSON.stringify(accounts.value));
         for (const tx of stagedTransactions.value) {
-            applyTransaction(projected, tx);
+            applyTransactionToAccounts(projected, tx);
         }
         return projected;
     });
 
+    function toUsd(amount, currency = 'USD') {
+        const rate = FX_TO_USD[currency?.toUpperCase?.()] ?? 1.0;
+        const val = typeof amount === 'number' ? amount : parseFloat(amount || 0);
+        return val * rate;
+    }
+
+    const totalBalance = computed(() => {
+        return accounts.value.reduce((sum, acc) => sum + toUsd(acc.balance, acc.currency), 0);
+    });
+
+    const projectedTotalBalance = computed(() => {
+        return projectedAccounts.value.reduce((sum, acc) => sum + toUsd(acc.balance, acc.currency), 0);
+    });
+
     // --- ACTIONS (Methods) ---
 
-    function applyTransaction(state, tx) {
-        if (tx.type === 'TRANSFER') {
-            const fromAccount = state.accounts.find(a => a.id === tx.from);
-            const toAccount = state.accounts.find(a => a.id === tx.to);
+    function applyTransactionToAccounts(accountsList, tx) {
+        if (tx.type === 'TRANSFER' || tx.type === 'transfer') {
+            const fromAccount = accountsList.find(a => a.id === tx.from || a.id === tx.from_account_id);
+            const toAccount = accountsList.find(a => a.id === tx.to || a.id === tx.to_account_id);
             if (fromAccount) fromAccount.balance -= tx.amount;
             if (toAccount) toAccount.balance += tx.amount;
-        } else if (tx.type === 'LOAN_ORDER') {
-            state.loans.push({
-                id: tx.id,
-                amount: tx.amount,
-                principal: tx.amount, // Adding more detail
-                term: tx.term,
-                status: 'PENDING',
+        } else if (tx.type === 'debit') {
+            const account = accountsList.find(a => a.id === tx.account_id);
+            if (account) account.balance -= tx.amount;
+        } else if (tx.type === 'credit') {
+            const account = accountsList.find(a => a.id === tx.account_id);
+            if (account) account.balance += tx.amount;
+        } else if (tx.type === 'CREATE_ACCOUNT') {
+            // Add a placeholder account for projection
+            accountsList.push({
+                id: `pending_${tx.id}`,
+                account_type: tx.account_type,
+                account_number: 'PENDING',
+                balance: tx.initial_balance || 0,
+                currency: tx.currency || 'USD',
+                is_active: true,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                _isPending: true
             });
         }
     }
@@ -88,19 +122,129 @@ export const useBankStore = defineStore('bank', () => {
     }
 
     async function fetchBaseState() {
-        // const newState = await api.fetchBackendState();
-        // mock for hackathon
-        const newState = {
-            accounts: [
-                { id: 'a1', name: 'Checking', balance: 1250.77 },
-                { id: 'a2', name: 'Savings', balance: 5800.00 },
-            ],
-            loans: [],
-            lastUpdated: new Date().toISOString(),
-        };
+        try {
+            const response = await fetch('/api/accounts', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
 
-        baseState.value = newState;
-        await saveEncryptedState();
+            if (!response.ok) {
+                throw new Error('Failed to fetch accounts');
+            }
+
+            const data = await response.json();
+            accounts.value = data.accounts || [];
+            lastUpdated.value = new Date().toISOString();
+            await saveEncryptedState();
+        } catch (err) {
+            console.error('Failed to fetch base state:', err);
+            throw err;
+        }
+    }
+
+    async function fetchAccountTransactions(accountId) {
+        try {
+            const response = await fetch(`/api/accounts/${accountId}/transactions`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch transactions');
+            }
+
+            const data = await response.json();
+            return data.transactions || [];
+        } catch (err) {
+            console.error('Failed to fetch transactions:', err);
+            throw err;
+        }
+    }
+
+    async function createAccount(accountType, currency = 'USD', initialBalance = 0) {
+        if (!mfaToken.value || new Date(mfaTokenExpiry.value) <= new Date()) {
+            isMfaRequired.value = true;
+            throw new Error('MFA token required');
+        }
+
+        try {
+            const response = await fetch('/api/accounts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${mfaToken.value}`
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    account_type: accountType,
+                    currency,
+                    initial_balance: initialBalance
+                })
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    isMfaRequired.value = true;
+                    await clearMfaToken();
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create account');
+            }
+
+            const data = await response.json();
+            await fetchBaseState(); // Refresh accounts
+            return data.account;
+        } catch (err) {
+            console.error('Failed to create account:', err);
+            throw err;
+        }
+    }
+
+    async function createTransaction(accountId, amount, transactionType, description, channel = 'web', recipientId = null, location = null) {
+        if (!mfaToken.value || new Date(mfaTokenExpiry.value) <= new Date()) {
+            isMfaRequired.value = true;
+            throw new Error('MFA token required');
+        }
+
+        try {
+            const response = await fetch(`/api/accounts/${accountId}/transactions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${mfaToken.value}`
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    amount,
+                    transaction_type: transactionType,
+                    description,
+                    channel,
+                    recipient_id: recipientId,
+                    location
+                })
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    isMfaRequired.value = true;
+                    await clearMfaToken();
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create transaction');
+            }
+
+            const data = await response.json();
+            return data.transaction;
+        } catch (err) {
+            console.error('Failed to create transaction:', err);
+            throw err;
+        }
     }
 
     async function addTransactionToStage(tx) {
@@ -137,6 +281,18 @@ export const useBankStore = defineStore('bank', () => {
         await saveEncryptedQueues();
     }
 
+    async function cancelCommittedTransaction(id) {
+        const idx = committedTransactions.value.findIndex(tx => tx.id === id);
+        if (idx === -1) return false;
+        committedTransactions.value.splice(idx, 1);
+        await saveEncryptedQueues();
+        // If we removed the first item, we may need to restart worker for next in queue
+        if (idx === 0) {
+            triggerUploadWorker();
+        }
+        return true;
+    }
+
     // --- ENCRYPTION & PERSISTENCE ---
 
     async function saveEncryptedQueues() {
@@ -162,7 +318,10 @@ export const useBankStore = defineStore('bank', () => {
     async function saveEncryptedState() {
         if (!sessionKey.value) return;
         try {
-            const stateData = await encryptData(JSON.stringify(baseState.value), sessionKey.value);
+            const stateData = await encryptData(JSON.stringify({
+                accounts: accounts.value,
+                lastUpdated: lastUpdated.value
+            }), sessionKey.value);
             localStorage.setItem('BASE_STATE', stateData);
         } catch (err) { console.error("Failed to save base state:", err); }
     }
@@ -207,7 +366,9 @@ export const useBankStore = defineStore('bank', () => {
             const encryptedState = localStorage.getItem('BASE_STATE');
             if (encryptedState) {
                 const decrypted = await decryptData(encryptedState, sessionKey.value);
-                baseState.value = JSON.parse(decrypted);
+                const state = JSON.parse(decrypted);
+                accounts.value = state.accounts || [];
+                lastUpdated.value = state.lastUpdated;
             }
 
             // Load MFA Token
@@ -292,16 +453,36 @@ export const useBankStore = defineStore('bank', () => {
         try {
             syncError.value = null;
 
-            // MOCK API CALL - This must match your new backend endpoint
-            // const response = await api.submitTransaction(txToUpload, mfaToken.value);
-            const response = await fetch('/api/submit-transaction', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${mfaToken.value}` // Send the token
-                },
-                body: JSON.stringify(txToUpload)
-            });
+            let response;
+
+            // Handle different transaction types with appropriate API endpoints
+            if (txToUpload.type === 'CREATE_ACCOUNT') {
+                // Create account via accounts endpoint
+                response = await fetch('/api/accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${mfaToken.value}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        account_type: txToUpload.account_type,
+                        currency: txToUpload.currency,
+                        initial_balance: txToUpload.initial_balance || 0
+                    })
+                });
+            } else {
+                // Default transaction submission
+                response = await fetch('/api/submit-transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${mfaToken.value}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(txToUpload)
+                });
+            }
 
             if (!response.ok) {
                 let message = 'Upload failed';
@@ -339,18 +520,26 @@ export const useBankStore = defineStore('bank', () => {
     window.addEventListener('online', triggerUploadWorker);
 
     return {
-        baseState,
+        accounts,
+        transactions,
+        lastUpdated,
         stagedTransactions,
         committedTransactions,
         isLoading,
         syncError,
-        projectedState,
+        projectedAccounts,
+        totalBalance,
+        projectedTotalBalance,
         isMfaRequired, // Expose this
         initializeSession,
+        fetchBaseState,
+        fetchAccountTransactions,
+        createAccount,
+        createTransaction,
         addTransactionToStage,
         commitAndAuthorizeStagedChanges, // Expose the new action
         discardStagedChanges,
-        fetchBaseState,
+        cancelCommittedTransaction,
         triggerUploadWorker, // Allow UI to trigger a sync check
         hasEncryptedData // Allow checking for encrypted data
     };

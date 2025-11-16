@@ -59,8 +59,9 @@
 
         <!-- Transaction Queue -->
         <div class="card shadow-sm mb-4">
-          <div class="card-header">
+          <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Transaction Queue</h5>
+            <small class="text-muted" v-if="store.committedTransactions.length > 0">Click cancel to remove an item before it's processed.</small>
           </div>
           <div class="card-body">
             <div v-if="store.committedTransactions.length === 0 && completedCount === 0" class="text-center text-muted py-4">
@@ -70,16 +71,29 @@
               <li
                 v-for="(tx, index) in store.committedTransactions"
                 :key="tx.id"
-                class="list-group-item d-flex justify-content-between align-items-center"
+                class="list-group-item d-flex justify-content-between align-items-start"
               >
-                <div>
+                <div class="me-3 flex-grow-1">
                   <strong>{{ formatTransactionType(tx.type) }}</strong>
                   <br>
                   <small class="text-muted">{{ formatTransactionDetails(tx) }}</small>
+                  <div v-if="tx._cancelled" class="badge bg-secondary mt-1">Cancelled</div>
                 </div>
-                <div>
-                  <span v-if="index === 0" class="spinner-border spinner-border-sm text-primary me-2"></span>
-                  <span class="badge bg-secondary">{{ index === 0 ? 'Uploading...' : 'Pending' }}</span>
+                <div class="text-end d-flex flex-column align-items-end gap-2">
+                  <div>
+                    <span v-if="index === 0 && !tx._cancelled" class="spinner-border spinner-border-sm text-primary me-2"></span>
+                    <span class="badge" :class="tx._cancelled ? 'bg-secondary' : (index === 0 ? 'bg-primary' : 'bg-secondary')">
+                      {{ tx._cancelled ? 'Removed' : (index === 0 ? 'Uploading...' : 'Pending') }}
+                    </span>
+                  </div>
+                  <button
+                    v-if="!tx._cancelled"
+                    class="btn btn-sm btn-outline-danger"
+                    :disabled="isUploading && index === 0"
+                    @click="cancelTx(tx.id)"
+                  >
+                    <i class="bi bi-x-circle"></i> Cancel
+                  </button>
                 </div>
               </li>
             </ul>
@@ -176,7 +190,10 @@ const progressBarClass = computed(() => {
 function formatTransactionType(type) {
   const types = {
     'TRANSFER': 'Money Transfer',
-    'LOAN_ORDER': 'Loan Request'
+    'LOAN_ORDER': 'Loan Request',
+    'CREATE_ACCOUNT': 'Create Account',
+    'debit': 'Withdrawal',
+    'credit': 'Deposit'
   };
   return types[type] || type;
 }
@@ -186,6 +203,18 @@ function formatTransactionDetails(tx) {
     return `$${tx.amount.toFixed(2)} from ${tx.from} to ${tx.to}`;
   } else if (tx.type === 'LOAN_ORDER') {
     return `$${tx.amount.toFixed(2)} for ${tx.term} months`;
+  } else if (tx.type === 'CREATE_ACCOUNT') {
+    const accountTypes = {
+      'checking': 'Checking',
+      'savings': 'Savings',
+      'business': 'Business',
+      'investment': 'Investment'
+    };
+    const typeName = accountTypes[tx.account_type] || tx.account_type;
+    const amount = tx.initial_balance || 0;
+    return `${typeName} account with ${new Intl.NumberFormat('en-US', { style: 'currency', currency: tx.currency || 'USD' }).format(amount)}`;
+  } else if (tx.type === 'debit' || tx.type === 'credit') {
+    return `${new Intl.NumberFormat('en-US', { style: 'currency', currency: tx.currency || 'USD' }).format(tx.amount)}`;
   }
   return JSON.stringify(tx);
 }
@@ -194,12 +223,19 @@ function retryUpload() {
   store.triggerUploadWorker();
 }
 
+function cancelTx(id) {
+  const removed = store.cancelCommittedTransaction(id);
+  if (!removed) return;
+  // Adjust total count if item removed before processing
+  totalCount.value = completedCount.value + store.committedTransactions.length;
+}
+
 // Track progress
 let progressInterval = null;
 
 onMounted(() => {
   // Initialize total count
-  totalCount.value = store.committedTransactions.length + completedCount.value;
+  totalCount.value = completedCount.value + store.committedTransactions.length;
 
   // Monitor queue changes
   progressInterval = setInterval(() => {
@@ -208,12 +244,16 @@ onMounted(() => {
     if (newCompleted > completedCount.value) {
       completedCount.value = newCompleted;
     }
-
+    // Recompute total if queue changed (e.g., cancellations)
+    const recomputedTotal = completedCount.value + currentRemaining;
+    if (recomputedTotal !== totalCount.value) {
+      totalCount.value = recomputedTotal;
+    }
     // Auto-redirect when complete
     if (isComplete.value && totalCount.value > 0) {
       setTimeout(() => {
         router.push('/dashboard');
-      }, 2000);
+      }, 1500);
     }
   }, 500);
 });
@@ -236,4 +276,7 @@ onUnmounted(() => {
   font-size: 0.875rem;
   padding: 0.5rem 1rem;
 }
+
+.list-group-item button.btn-outline-danger { opacity: 0.85; }
+.list-group-item button.btn-outline-danger:hover { opacity: 1; }
 </style>

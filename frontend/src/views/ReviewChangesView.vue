@@ -11,45 +11,42 @@
           <button @click="$router.push('/operations')" class="btn btn-link p-0 ms-1">Stage a new operation.</button>
         </div>
 
+        <!-- Account Balances with Projected View -->
+        <AccountBalances v-if="store.stagedTransactions.length > 0" :auto-refresh="true" class="mb-4" />
+
         <!-- Main Diff Card -->
-        <div v-else class="card shadow-sm">
+        <div v-if="store.stagedTransactions.length > 0" class="card shadow-sm">
           <div class="card-header">
-            <h5 class="mb-0">Projected State ("The Diff")</h5>
+            <h5 class="mb-0">Staged Transactions</h5>
           </div>
           <div class="card-body">
-            <!-- Diff View: Accounts -->
+            <!-- Transaction List -->
             <div class="mb-4">
-              <h6>Account Balances</h6>
               <ul class="list-group">
-                <li v-for="account in store.projectedState.accounts" :key="account.id"
-                    class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{{ account.name }}</strong>
-                    <br>
-                    <small class="text-muted">{{ account.id }}</small>
+                <li v-for="tx in store.stagedTransactions" :key="tx.id"
+                    class="list-group-item">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <div class="d-flex align-items-center gap-2">
+                        <i :class="getTransactionIcon(tx)"></i>
+                        <strong>{{ formatTransactionType(tx.type) }}</strong>
+                      </div>
+                      <small class="text-muted d-block mt-1">{{ tx.description || 'No description' }}</small>
+                      <small class="text-muted d-block">
+                        <i class="bi bi-clock"></i> {{ formatDate(tx.timestamp) }}
+                      </small>
+                      <!-- Additional details for CREATE_ACCOUNT -->
+                      <div v-if="tx.type === 'CREATE_ACCOUNT'" class="mt-2">
+                        <span class="badge bg-info me-1">{{ formatAccountTypeName(tx.account_type) }}</span>
+                        <span class="badge bg-secondary">{{ tx.currency }}</span>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <span :class="getTransactionClass(tx)" style="font-size: 1.1rem; font-weight: 600;">
+                        {{ formatTransactionAmount(tx) }}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <!-- Show "diff" -->
-                    <span v-if="isChanged(account)" class="text-warning me-2" style="font-weight: 600;">
-                      ${{ getBaseBalance(account.id).toFixed(2) }}
-                      <i class="bi bi-arrow-right-short"></i>
-                    </span>
-                    <span :class="getChangeClass(account)">
-                      ${{ account.balance.toFixed(2) }}
-                    </span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Diff View: New Loans -->
-            <div v-if="newLoans.length > 0">
-              <h6>New Loan Obligations</h6>
-              <ul class="list-group">
-                <li v-for="loan in newLoans" :key="loan.id"
-                    class="list-group-item list-group-item-success">
-                  <strong>New {{ loan.term }}-Month Loan</strong>
-                  <span class="float-end"><strong>+${{ loan.amount.toFixed(2) }}</strong></span>
                 </li>
               </ul>
             </div>
@@ -94,19 +91,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useBankStore } from '@/stores/bank.js';
 import { useRouter } from 'vue-router';
 import { Modal } from 'bootstrap'; // Import Bootstrap's Modal
-
-// Import the user-provided FaceVerification component
-// (Assuming it's in @/components/FaceVerification.vue)
 import FaceVerification from '@/components/FaceVerification.vue';
+import AccountBalances from '@/components/AccountBalances.vue';
 
 const store = useBankStore();
 const router = useRouter();
-const authError = ref('');
-const modalEl = ref(null); // Ref for the modal DOM element
+const authError = ref(null);
+const modalEl = ref(null);
 let bsModal = null; // Variable to hold the Bootstrap Modal instance
 
 onMounted(() => {
@@ -115,28 +110,86 @@ onMounted(() => {
   }
 });
 
-// --- Diff Logic ---
-function getBaseBalance(accountId) {
-  const baseAccount = store.baseState.accounts.find(a => a.id === accountId);
-  return baseAccount ? baseAccount.balance : 0;
+// --- Helper Functions ---
+function formatTransactionType(type) {
+  const types = {
+    'TRANSFER': 'Transfer',
+    'transfer': 'Transfer',
+    'debit': 'Withdrawal',
+    'credit': 'Deposit',
+    'LOAN_ORDER': 'Loan Application',
+    'CREATE_ACCOUNT': 'Create Account'
+  };
+  return types[type] || type;
 }
 
-function isChanged(projectedAccount) {
-  return projectedAccount.balance !== getBaseBalance(projectedAccount.id);
+function formatTransactionAmount(tx) {
+  if (tx.type === 'CREATE_ACCOUNT') {
+    const amount = parseFloat(tx.initial_balance) || 0;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: tx.currency || 'USD'
+    }).format(amount);
+  }
+
+  const amount = parseFloat(tx.amount) || 0;
+  const formatted = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: tx.currency || 'USD'
+  }).format(amount);
+
+  if (tx.type === 'debit') return '- ' + formatted;
+  if (tx.type === 'credit') return '+ ' + formatted;
+  return formatted;
 }
 
-function getChangeClass(projectedAccount) {
-  const base = getBaseBalance(projectedAccount.id);
-  if (projectedAccount.balance > base) return 'text-success fw-bold';
-  if (projectedAccount.balance < base) return 'text-danger fw-bold';
+function getTransactionClass(tx) {
+  if (tx.type === 'debit') return 'text-danger';
+  if (tx.type === 'credit') return 'text-success';
+  if (tx.type === 'CREATE_ACCOUNT') return 'text-primary';
   return 'text-dark';
 }
 
-const newLoans = computed(() => {
-  return store.projectedState.loans.filter(loan =>
-      !store.baseState.loans.some(baseLoan => baseLoan.id === loan.id)
-  );
+function formatDate(timestamp) {
+  if (!timestamp) return 'N/A';
+  return new Date(timestamp).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function getTransactionIcon(tx) {
+  const icons = {
+    'CREATE_ACCOUNT': 'bi bi-plus-circle text-primary',
+    'TRANSFER': 'bi bi-arrow-left-right text-info',
+    'transfer': 'bi bi-arrow-left-right text-info',
+    'debit': 'bi bi-arrow-down-circle text-danger',
+    'credit': 'bi bi-arrow-up-circle text-success',
+    'LOAN_ORDER': 'bi bi-cash-coin text-warning'
+  };
+  return icons[tx.type] || 'bi bi-circle';
+}
+
+function formatAccountTypeName(type) {
+  const names = {
+    'checking': 'Checking',
+    'savings': 'Savings',
+    'business': 'Business',
+    'investment': 'Investment'
+  };
+  return names[type] || type;
+}
+
+
+onMounted(() => {
+  if (modalEl.value) {
+    bsModal = new Modal(modalEl.value);
+  }
 });
+
 
 // --- Modal & Auth Logic ---
 
@@ -153,9 +206,6 @@ function discardChanges() {
  * That component now needs to emit the *full response data* from the API.
  */
 async function onFaceVerified(verificationData) {
-  // **CRITICAL**: We need to modify FaceVerification.vue to emit the *data*
-  // Let's assume it emits: { verified: true, mfaToken: '...', mfaTokenExpiry: '...' }
-
   if (verificationData && verificationData.verified && verificationData.mfaToken) {
     try {
       // Call our new Pinia store action

@@ -101,7 +101,7 @@
                 <small class="text-muted">Rough FX conversion applied</small>
               </div>
               <div class="text-end">
-                <h4 class="mb-0 text-primary">
+                <h4 class="mb-0">
                   {{ formatCurrency(displayTotalBalance, 'USD') }}
                 </h4>
                 <small v-if="showProjected && hasChanges" class="text-success">
@@ -268,7 +268,7 @@ onMounted(async () => {
 
 .total-balance {
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffb218 0%, #da7400 100%);
   border-radius: 0.5rem;
   color: white;
 }

@@ -88,12 +88,7 @@
               </tr>
               </tbody>
             </table>
-            <UserPhoto />
-
-            <!-- Face Verification component for testing -->
-            <div class="mt-4">
-              <FaceVerification />
-            </div>
+            <UserPhoto :size="large"></UserPhoto>
           </div>
         </div>
       </div>
